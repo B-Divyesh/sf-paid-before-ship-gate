@@ -1,0 +1,13 @@
+200 https://paid-before-ship-gate.sociobot.in/#main
+200 https://paid-before-ship-gate.sociobot.in/
+200 https://paid-before-ship-gate.sociobot.in/demo
+200 https://paid-before-ship-gate.sociobot.in/board
+200 https://paid-before-ship-gate.sociobot.in/privacy
+303 https://api.sociobot.in/api/v1/products/paid-before-ship-gate/checkout https://checkout.dodopayments.com/session/cks_0NmNlvCzqQPAL3CJC73Dp
+200 https://paid-before-ship-gate.sociobot.in/terms
+200 https://sociobot.in/
+200 https://paid-before-ship-gate.sociobot.in/demo#main
+200 https://paid-before-ship-gate.sociobot.in/board#main
+200 https://paid-before-ship-gate.sociobot.in/#price-title
+200 https://paid-before-ship-gate.sociobot.in/privacy#main
+200 https://paid-before-ship-gate.sociobot.in/terms#main

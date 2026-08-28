@@ -1,0 +1,41 @@
+
+> paid-before-ship-gate@1.0.0 test
+> npm run build && playwright test --grep @claim:saved-rules
+
+
+> paid-before-ship-gate@1.0.0 build
+> npm run typecheck && vite build
+
+
+> paid-before-ship-gate@1.0.0 typecheck
+> tsc --noEmit
+
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 11 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                                         1.69 kB │ gzip:  0.60 kB
+dist/assets/atkinson-hyperlegible-latin-ext-700-normal-CKkU2Dpt.woff    7.36 kB
+dist/assets/atkinson-hyperlegible-latin-ext-400-normal-Bbz-b3yf.woff    7.36 kB
+dist/assets/atkinson-hyperlegible-latin-ext-700-normal-BoVPHkS0.woff2   9.37 kB
+dist/assets/atkinson-hyperlegible-latin-ext-400-normal-DRk46D-x.woff2   9.38 kB
+dist/assets/atkinson-hyperlegible-latin-400-normal-BbWidj28.woff       14.02 kB
+dist/assets/atkinson-hyperlegible-latin-700-normal-BK6Glc0m.woff       14.29 kB
+dist/assets/atkinson-hyperlegible-latin-400-normal-BrHNak5F.woff2      17.21 kB
+dist/assets/atkinson-hyperlegible-latin-700-normal-GZI4o3u0.woff2      17.52 kB
+dist/assets/index-4-oJbEaV.css                                         17.57 kB │ gzip:  4.66 kB
+dist/assets/index-IkTkiBZ2.js                                          30.25 kB │ gzip: 10.28 kB │ map: 63.58 kB
+✓ built in 370ms
+[2m[WebServer] [22m(node:2289) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:2307) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2307) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/claims.spec.ts:83:1 › @claim:saved-rules applies a customer hold to later imports (1.0s)
+
+  1 passed (3.7s)

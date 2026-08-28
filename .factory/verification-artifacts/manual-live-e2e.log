@@ -1,0 +1,9 @@
+PASS demo opens in one click state: 5 orders, 3 ready, persistent sandbox banner
+PASS invalid negative/currency imports reject, then valid quoted CSV recovers
+PASS unmatched/partial/duplicate payment paths reject safely; remainder clears hold
+PASS override requires named reason and makes order ready
+PASS pack list contains paid/overridden orders and excludes held SO-1051
+PASS malformed backup rejects; valid empty backup imports; reset restores sample
+PASS modal initial focus, Escape close, and focus return
+PASS privacy: 5 runtime requests, all same-origin; no console/page errors
+PASS real workspace persists after reload; case-insensitive duplicate is rejected

@@ -1,0 +1,5 @@
+
+> paid-before-ship-gate@1.0.0 test:live
+> node scripts/verify-live.mjs
+
+Live release checks passed for https://paid-before-ship-gate.sociobot.in

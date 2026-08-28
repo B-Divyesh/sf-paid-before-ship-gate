@@ -1,0 +1,2 @@
+SERVICE_WORKER {"controller":"https://paid-before-ship-gate.sociobot.in/sw.js","active":"activated","waiting":null,"scope":"https://paid-before-ship-gate.sociobot.in/","caches":["pbsg-v2"]}
+PASS real saved order reloads offline and offline state is announced

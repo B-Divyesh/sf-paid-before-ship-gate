@@ -1,0 +1,60 @@
+
+> paid-before-ship-gate@1.0.0 test
+> npm run build && playwright test
+
+
+> paid-before-ship-gate@1.0.0 build
+> npm run typecheck && vite build
+
+
+> paid-before-ship-gate@1.0.0 typecheck
+> tsc --noEmit
+
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 11 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                                         1.69 kB │ gzip:  0.60 kB
+dist/assets/atkinson-hyperlegible-latin-ext-400-normal-Bbz-b3yf.woff    7.36 kB
+dist/assets/atkinson-hyperlegible-latin-ext-700-normal-CKkU2Dpt.woff    7.36 kB
+dist/assets/atkinson-hyperlegible-latin-ext-700-normal-BoVPHkS0.woff2   9.37 kB
+dist/assets/atkinson-hyperlegible-latin-ext-400-normal-DRk46D-x.woff2   9.38 kB
+dist/assets/atkinson-hyperlegible-latin-400-normal-BbWidj28.woff       14.02 kB
+dist/assets/atkinson-hyperlegible-latin-700-normal-BK6Glc0m.woff       14.29 kB
+dist/assets/atkinson-hyperlegible-latin-400-normal-BrHNak5F.woff2      17.21 kB
+dist/assets/atkinson-hyperlegible-latin-700-normal-GZI4o3u0.woff2      17.52 kB
+dist/assets/index-4-oJbEaV.css                                         17.57 kB │ gzip:  4.66 kB
+dist/assets/index-IkTkiBZ2.js                                          30.25 kB │ gzip: 10.28 kB │ map: 63.58 kB
+✓ built in 404ms
+[2m[WebServer] [22m(node:3241) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 16 tests using 2 workers
+
+(node:3259) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3265) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3265) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3259) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/claims.spec.ts:3:1 › @claim:demo-sandbox sample mode resets without touching real records (3.2s)
+  ✓   3 tests/claims.spec.ts:17:1 › @claim:csv-order-import imports order CSV with redacted optional columns (1.8s)
+  ✓   4 tests/claims.spec.ts:35:1 › @claim:payment-match matches imported payment amounts (1.2s)
+  ✓   2 tests/accessibility.spec.ts:6:3 › has no serious accessibility issues on / (5.8s)
+  ✓   5 tests/claims.spec.ts:43:1 › @claim:hold-gate excludes held orders until a named override (2.6s)
+  ✓   7 tests/claims.spec.ts:63:1 › @claim:csv-export exports one row for every ready order (1.2s)
+  ✓   8 tests/claims.spec.ts:73:1 › @claim:json-backup exports a complete local workspace (1.2s)
+  ✓   6 tests/accessibility.spec.ts:6:3 › has no serious accessibility issues on /demo (5.2s)
+  ✓   9 tests/claims.spec.ts:83:1 › @claim:saved-rules applies a customer hold to later imports (1.8s)
+  ✓  11 tests/claims.spec.ts:91:1 › @claim:local-only demo flow sends no data off origin (1.5s)
+  ✓  10 tests/accessibility.spec.ts:6:3 › has no serious accessibility issues on /privacy (4.1s)
+  ✓  12 tests/claims.spec.ts:104:1 › @claim:device-encryption @claim:passphrase-not-stored locks and unlocks local records (4.1s)
+  ✓  13 tests/accessibility.spec.ts:6:3 › has no serious accessibility issues on /terms (3.6s)
+  ✓  14 tests/claims.spec.ts:133:1 › @claim:offline-reload works offline after the first visit (2.2s)
+  ✓  15 tests/accessibility.spec.ts:19:1 › supports a 390px mobile viewport and keyboard path (1.7s)
+  ✓  16 tests/accessibility.spec.ts:31:1 › configures known SPA routes, real 404 responses, and safe cache policies (11ms)
+
+  16 passed (26.0s)

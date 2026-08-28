@@ -1,0 +1,133 @@
+[
+  {
+    "tag": "A",
+    "text": "Skip to content",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "A",
+    "text": "▰Paid BeforeShip Gate",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "A",
+    "text": "Demo",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "A",
+    "text": "Order board",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "A",
+    "text": "Privacy",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Reset demo",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "A",
+    "text": "Start for real",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Import order CSV",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Import payments",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Add one order",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Export pack list",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "All 5",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Ready 3",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "On hold 2",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Remove payment hold",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Apply this hold to Moss & Thread",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Record override",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Apply this hold to Brighton Pantry",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Require payment",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Apply this hold to Ada Studio",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Apply this hold to North Pier Cafe",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Export backup",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "BUTTON",
+    "text": "Import backup",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "A",
+    "text": "Terms",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "A",
+    "text": "Built by Param Factory (external)",
+    "outline": "rgb(231, 174, 46) solid 4px"
+  },
+  {
+    "tag": "BODY",
+    "text": "Skip to content ▰Paid BeforeShip Gate DemoOrder boardPrivacyDemo — sample data, ",
+    "outline": "rgb(23, 42, 45) none 0px"
+  }
+]
+PASS keyboard Tab reaches primary, demo, import/export, and recovery controls with visible outlines

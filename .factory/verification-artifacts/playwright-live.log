@@ -1,0 +1,29 @@
+
+Running 16 tests using 2 workers
+
+(node:3846) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3847) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3847) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3846) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/claims.spec.ts:3:1 › @claim:demo-sandbox sample mode resets without touching real records (3.1s)
+  ✓   3 tests/claims.spec.ts:17:1 › @claim:csv-order-import imports order CSV with redacted optional columns (2.1s)
+  ✓   2 tests/accessibility.spec.ts:6:3 › has no serious accessibility issues on / (5.3s)
+  ✓   4 tests/claims.spec.ts:35:1 › @claim:payment-match matches imported payment amounts (1.8s)
+  ✓   6 tests/claims.spec.ts:43:1 › @claim:hold-gate excludes held orders until a named override (3.1s)
+  ✓   7 tests/claims.spec.ts:63:1 › @claim:csv-export exports one row for every ready order (1.3s)
+  ✓   5 tests/accessibility.spec.ts:6:3 › has no serious accessibility issues on /demo (6.0s)
+  ✓   8 tests/claims.spec.ts:73:1 › @claim:json-backup exports a complete local workspace (1.8s)
+  ✓  10 tests/claims.spec.ts:83:1 › @claim:saved-rules applies a customer hold to later imports (1.4s)
+  ✓   9 tests/accessibility.spec.ts:6:3 › has no serious accessibility issues on /privacy (4.2s)
+  ✓  11 tests/claims.spec.ts:91:1 › @claim:local-only demo flow sends no data off origin (2.1s)
+  ✓  12 tests/accessibility.spec.ts:6:3 › has no serious accessibility issues on /terms (4.2s)
+  ✓  13 tests/claims.spec.ts:104:1 › @claim:device-encryption @claim:passphrase-not-stored locks and unlocks local records (4.0s)
+  ✓  14 tests/accessibility.spec.ts:19:1 › supports a 390px mobile viewport and keyboard path (1.9s)
+  ✓  16 tests/accessibility.spec.ts:31:1 › configures known SPA routes, real 404 responses, and safe cache policies (96ms)
+  ✓  15 tests/claims.spec.ts:133:1 › @claim:offline-reload works offline after the first visit (1.8s)
+
+  16 passed (26.7s)
