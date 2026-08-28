@@ -89,13 +89,15 @@ test('@claim:saved-rules applies a customer hold to later imports', async ({ pag
 });
 
 test('@claim:local-only demo flow sends no data off origin', async ({ page }) => {
-  const external: string[] = [];
-  page.on('request', (request) => { if (new URL(request.url()).origin !== 'http://127.0.0.1:4173') external.push(request.url()); });
+  const requests: string[] = [];
+  page.on('request', (request) => requests.push(request.url()));
   await page.goto('/demo');
   await page.getByRole('button', { name: 'Add one order' }).click();
   await page.getByLabel('Order number').fill('PRIVATE-1');
   await page.getByLabel('Order total').fill('20');
   await page.getByRole('button', { name: 'Add order' }).click();
+  const origin = new URL(page.url()).origin;
+  const external = requests.filter((url) => new URL(url).origin !== origin);
   expect(external).toEqual([]);
 });
 
