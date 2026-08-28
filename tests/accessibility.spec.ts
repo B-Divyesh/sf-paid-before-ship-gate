@@ -44,7 +44,7 @@ test('keeps mobile touch targets usable and reflows filters at 200% text', async
     expect(box!.width).toBeGreaterThanOrEqual(44);
     expect(box!.height).toBeGreaterThanOrEqual(44);
   }
-  await page.addStyleTag({ content: ':root { font-size: 200% !important; }' });
+  await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
   await expect(page.getByRole('button', { name: /On hold 2/ })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   for (const button of await page.locator('.filter-bar button').all()) {
