@@ -1,0 +1,8 @@
+{
+  "generator": "/opt/fleet/lib/gen-image.sh (factory-image)",
+  "date": "2026-08-28",
+  "size": "1536x1024",
+  "quality": "high",
+  "prompt": "Use case: stylized-concept. Asset type: landing-page hero illustration. A tactile two-colour risograph editorial collage of a tiny mail-order seller's packing checkpoint, viewed slightly overhead. An open cardboard parcel waits behind a simple gate bar; abstract receipt slips and order sheets sit nearby; one green clearance token passes the gate while one coral hold token waits. Cream recycled paper, dark teal ink, coral red overprint, small mustard tape accents, coarse halftone dots, torn-paper edges, imperfect ink registration, bold negative space. No people, no hands, no readable text, no letters, no numbers, no logos, no watermark, no gradients, no glossy 3D, no photorealism.",
+  "review": "Accepted: clear gate and parcel, coherent palette, no people, logos, or readable text artifacts."
+}

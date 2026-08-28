@@ -1,0 +1,13 @@
+{
+  "slug": "paid-before-ship-gate",
+  "title": "Paid Before Ship Gate",
+  "summary": "Stop unpaid orders before packing with a local payment checkpoint.",
+  "territory": "utilities",
+  "user": "A tiny seller that quotes or takes orders on flexible terms but needs a visible, intentional rule for which orders must be paid before they are packed or dispatched.",
+  "smallest_useful_product": "Local order-status board that imports orders and payment confirmations, flags hold-until-paid rules by customer or order, logs a named override reason, and exports a pack list.",
+  "success_measure": "No held order is dispatched without recorded payment or a named override, while pack-list preparation takes under five minutes per batch.",
+  "artifact_class": "pwa-offline",
+  "monetization": "one-time",
+  "constraints": "Payment imports are sensitive; support redacted CSV columns and device encryption; do not make creditworthiness claims or automatically contact customers.",
+  "state": "RESEARCHED"
+}
