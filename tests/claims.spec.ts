@@ -16,7 +16,17 @@ test('@claim:demo-sandbox sample mode resets without touching real records', asy
 
 test('@claim:csv-order-import imports order CSV with redacted optional columns', async ({ page }) => {
   await page.goto('/demo');
+
+  await page.locator('#orders-file').setInputFiles({ name: 'orders.csv', mimeType: 'text/csv', buffer: Buffer.from('order_number,customer\nNO-TOTAL,Redacted') });
+  await expect(page.locator('#notice')).toHaveText('No total column was found. Rename it total.');
+  await expect(page.getByText('NO-TOTAL', { exact: true })).toHaveCount(0);
+
+  await page.locator('#orders-file').setInputFiles({ name: 'orders.csv', mimeType: 'text/csv', buffer: Buffer.from('order_number,customer,total\nBLANK-TOTAL,Redacted,') });
+  await expect(page.locator('#notice')).toHaveText('Order BLANK-TOTAL has no total. Add a total and try again.');
+  await expect(page.getByText('BLANK-TOTAL', { exact: true })).toHaveCount(0);
+
   await page.locator('#orders-file').setInputFiles({ name: 'orders.csv', mimeType: 'text/csv', buffer: Buffer.from('order_number,total,hold\nRED-7,72.50,yes') });
+  await expect(page.locator('#notice')).toHaveText('1 order imported.');
   await expect(page.getByText('RED-7')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Redacted customer' })).toBeVisible();
   await expect(page.getByText('Hold · $72.50 due')).toBeVisible();

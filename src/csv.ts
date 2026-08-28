@@ -31,15 +31,19 @@ const cell = (row: string[], headers: string[], names: string[]) => {
 export function importOrders(text: string, data: AppData): { data: AppData; count: number } {
   const [headers, ...rows] = parseCsv(text);
   if (!headers) throw new Error('The file has no header row. Add order_number, customer, and total.');
-  const required = ['ordernumber', 'order', 'orderno'];
-  if (!headers.some((header) => required.includes(normalize(header)))) throw new Error('No order number column was found. Rename it order_number.');
+  const orderHeaders = ['ordernumber', 'order', 'orderno'];
+  const totalHeaders = ['total', 'amount', 'ordertotal'];
+  if (!headers.some((header) => orderHeaders.includes(normalize(header)))) throw new Error('No order number column was found. Rename it order_number.');
+  if (!headers.some((header) => totalHeaders.includes(normalize(header)))) throw new Error('No total column was found. Rename it total.');
   const known = new Map(data.orders.map((order) => [order.orderNumber, order]));
   let count = 0;
   for (const row of rows) {
-    const orderNumber = cell(row, headers, required);
+    const orderNumber = cell(row, headers, orderHeaders);
     if (!orderNumber) continue;
     const customer = cell(row, headers, ['customer', 'customername', 'name']) || 'Redacted customer';
-    const total = Number(cell(row, headers, ['total', 'amount', 'ordertotal']).replace(/[^0-9.-]/g, ''));
+    const totalCell = cell(row, headers, totalHeaders);
+    if (!totalCell) throw new Error(`Order ${orderNumber} has no total. Add a total and try again.`);
+    const total = Number(totalCell.replace(/[^0-9.-]/g, ''));
     if (!Number.isFinite(total) || total < 0) throw new Error(`Order ${orderNumber} has an invalid total. Fix that row and try again.`);
     const previous = known.get(orderNumber);
     const holdValue = cell(row, headers, ['hold', 'holduntilpaid', 'paymentrequired']).toLowerCase();

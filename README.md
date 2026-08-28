@@ -47,8 +47,10 @@ Extra columns are ignored. Multiple payment rows for one order are added togethe
 Requires Node.js 20 or newer.
 
 ```sh
-npm install
+npm ci
 npm run dev
+npm run lint
+npm run typecheck
 npm test
 npm run build
 ```
@@ -68,6 +70,8 @@ See `/privacy` and `/terms` in the app for the full policies.
 ## Deploy
 
 Deploy the contents of `dist/` as a static site. `staticwebapp.config.json` provides the SPA fallback, 404 behavior, CSP, and security headers. The factory owns infrastructure, DNS, and billing registration.
+
+After deployment, run `npm run test:live` to verify the public identity, checkout redirect, deep links, 404 status, and cache policy.
 
 ## License
 

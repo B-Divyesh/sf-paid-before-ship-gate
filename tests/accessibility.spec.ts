@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { readFile } from 'node:fs/promises';
 
 for (const route of ['/', '/demo', '/privacy', '/terms']) {
   test(`has no serious accessibility issues on ${route}`, async ({ page }) => {
@@ -25,4 +26,31 @@ test('supports a 390px mobile viewport and keyboard path', async ({ page }) => {
   await page.keyboard.press('Enter');
   await expect(page.getByText('SO-1049')).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test('configures known SPA routes, real 404 responses, and safe cache policies', async () => {
+  const config = JSON.parse(await readFile('dist/staticwebapp.config.json', 'utf8')) as {
+    navigationFallback?: unknown;
+    responseOverrides: Record<string, { rewrite: string; statusCode?: number }>;
+    routes: Array<{ route: string; rewrite?: string; headers?: Record<string, string> }>;
+  };
+
+  expect(config.navigationFallback).toBeUndefined();
+  for (const route of ['/demo', '/board', '/privacy', '/terms']) {
+    expect(config.routes).toContainEqual(expect.objectContaining({ route, rewrite: '/index.html' }));
+  }
+  expect(config.responseOverrides['404']).toEqual({ rewrite: '/404.html', statusCode: 404 });
+  expect(config.routes).toContainEqual(expect.objectContaining({
+    route: '/assets/*.{js,css,woff,woff2}',
+    headers: { 'Cache-Control': 'public, max-age=31536000, immutable' }
+  }));
+  expect(config.routes).toContainEqual(expect.objectContaining({
+    route: '/sw.js',
+    headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+  }));
+
+  const worker = await readFile('dist/sw.js', 'utf8');
+  expect(worker).toContain("const VERSION = 'pbsg-v2'");
+  expect(worker).toContain('self.skipWaiting()');
+  expect(worker).toContain('self.clients.claim()');
 });

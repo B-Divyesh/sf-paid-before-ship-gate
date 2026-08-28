@@ -4,7 +4,7 @@ import './styles.css';
 import { importOrders, importPayments, isReady, packListCsv } from './csv';
 import { captureLicense, hasPaidAccess, saveLicense, verifyLicense } from './license';
 import { sampleData } from './sample';
-import { clearData, disableVault, enableVault, loadData, saveData, unlockVault, vaultIsOpen } from './storage';
+import { disableVault, enableVault, loadData, saveData, unlockVault, vaultIsOpen } from './storage';
 import type { AppData, Filter, Order } from './types';
 import { board, dialogShell, escapeHtml, footer, header, home, legalPage, notFound } from './ui';
 
@@ -78,18 +78,12 @@ function download(name: string, content: string, type: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function csvHelp(kind: 'orders' | 'payments'): string {
-  return kind === 'orders'
-    ? `<h2>Import order CSV</h2><p>Required columns: <code>order_number,total</code>. Optional: <code>customer,hold,date</code>.</p><p>You may omit customer names and other sensitive columns.</p>`
-    : `<h2>Import payment CSV</h2><p>Required columns: <code>order_number,amount</code>. Extra columns are ignored.</p><p>Each amount is added to the matching order.</p>`;
-}
-
 async function readFile(input: HTMLInputElement, kind: 'orders' | 'payments' | 'backup'): Promise<void> {
   const file = input.files?.[0]; if (!file) return;
   try {
     const text = await file.text();
-    if (kind === 'orders') { const result = importOrders(text, data); data = result.data; await persist(); render(); notice(`${result.count} orders imported.`); }
-    else if (kind === 'payments') { const result = importPayments(text, data); data = result.data; await persist(); render(); notice(`${result.count} payments matched. Check the ready list.`); }
+    if (kind === 'orders') { const result = importOrders(text, data); data = result.data; await persist(); render(); notice(`${result.count} ${result.count === 1 ? 'order' : 'orders'} imported.`); }
+    else if (kind === 'payments') { const result = importPayments(text, data); data = result.data; await persist(); render(); notice(`${result.count} ${result.count === 1 ? 'payment' : 'payments'} matched. Check the ready list.`); }
     else {
       const parsed = JSON.parse(text) as AppData;
       if (!Array.isArray(parsed.orders) || !Array.isArray(parsed.rules)) throw new Error('This backup does not contain an order workspace. Choose a backup exported by this app.');
