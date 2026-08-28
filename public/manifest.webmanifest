@@ -1,8 +1,8 @@
 {
   "name": "Paid Before Ship Gate",
   "short_name": "Ship Gate",
-  "description": "Check payment evidence before packing orders.",
-  "start_url": "/board?v=3",
+  "description": "Check payment before packing orders.",
+  "start_url": "/board?v=4",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f4eedf",

@@ -2,23 +2,24 @@
 
 Stop unpaid orders before packing with a local payment checkpoint.
 
-This PWA is for small sellers who take orders on flexible terms. It imports order and payment CSV files, applies payment holds, records named overrides, and exports only ready orders as a pack list.
+This installable web app is for small sellers who let customers pay later. It imports order and payment CSV files, applies payment holds, records named approvals, and exports only ready orders as a pack list.
 
 Live site: https://paid-before-ship-gate.sociobot.in
 
-One-click demo: https://paid-before-ship-gate.sociobot.in/demo
+One-click demo: https://paid-before-ship-gate.sociobot.in/?demo=1
 
 ## What it does
 
 - Imports order CSV files. Only `order_number` and `total` are required.
-- Matches payment amounts through `order_number`.
-- Keeps held orders out of the pack list until paid or approved.
-- Records the override name and reason in the exported pack list.
-- Exports a CSV pack list and a full JSON backup.
+- Matches payment amounts and currencies through `order_number`.
+- Keeps held orders out of the pack list until paid or manually approved.
+- Records the approval name and reason in the exported pack list.
+- Exports and restores a complete JSON backup.
+- Marks packed orders complete so they do not enter the next pack list.
 - Works offline after the first online visit.
 - Stores order and payment data in this browser.
 
-The free board includes every payment check, override, backup, and export. The $39 one-time desk kit adds AES-GCM device encryption and reusable customer rules. Checkout and license verification use the Sociobot billing API.
+The free board includes every payment check, approval, backup, and export. The $39 one-time desk kit adds local passphrase encryption and reusable customer hold rules. Sociobot provides checkout. Dodo processes payment and handles the receipt.
 
 It does not process payments, score customers, collect debts, reserve stock, or print shipping labels.
 
@@ -36,11 +37,11 @@ The `customer`, `currency`, `hold`, and `date` columns are optional. Omit custom
 Payments:
 
 ```csv
-order_number,amount
-SO-1048,186.00
+order_number,amount,currency
+SO-1048,186.00,USD
 ```
 
-Extra columns are ignored. Multiple payment rows for one order are added together.
+Payment currency defaults to USD when omitted and must match the order currency. Harmless extra columns are ignored. Unique payment rows for one order are added together.
 
 ## Develop and verify
 
@@ -61,9 +62,9 @@ Claim tests use Playwright 1.58.2. Each product claim and its sandbox test is li
 
 ## Privacy and recovery
 
-Real records use IndexedDB. Demo records use a separate memory-only workspace and are discarded when the demo ends. CSV processing happens on the device.
+Records stay in this browser’s local database. Demo records use a separate memory-only workspace and are discarded when the demo ends. CSV and backup processing happen on the device.
 
-Paid vault encryption uses PBKDF2 and AES-GCM. The app does not store the passphrase. A lost passphrase cannot be recovered, so export backups before enabling encryption.
+With the desk kit, your passphrase encrypts records on this device. The app does not store the passphrase. A lost passphrase cannot be recovered, so export backups before enabling encryption.
 
 See `/privacy` and `/terms` in the app for the full policies.
 
@@ -71,7 +72,7 @@ See `/privacy` and `/terms` in the app for the full policies.
 
 Deploy the contents of `dist/` as a static site. `staticwebapp.config.json` provides the SPA fallback, 404 behavior, CSP, and security headers. The factory owns infrastructure, DNS, and billing registration.
 
-After deployment, run `npm run test:live` to verify the public identity, checkout redirect, deep links, 404 status, and cache policy.
+After deployment, run `npm run test:live` to verify the live title, product slug, checkout redirect, deep links, 404 status, and cache policy.
 
 ## License
 

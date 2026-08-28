@@ -18,6 +18,7 @@ let locked = false;
 let recoveryMessage = '';
 
 function currentPath(): string { return location.pathname.replace(/\/+$/, '') || '/'; }
+function isDemoRoute(): boolean { return currentPath() === '/demo' || new URLSearchParams(location.search).get('demo') === '1'; }
 
 const titles: Record<string, string> = {
   '/': 'Paid Before Ship Gate — stop unpaid orders',
@@ -27,10 +28,26 @@ const titles: Record<string, string> = {
   '/terms': 'Terms — Paid Before Ship Gate'
 };
 
+const descriptions: Record<string, string> = {
+  '/': 'Check payment before packing orders. Import CSV files, record approvals, and export a clear pack list.',
+  '/demo': 'Try five sample orders in an isolated payment-checking workspace.',
+  '/board': 'Import orders and payments, approve exceptions, and prepare a pack list.',
+  '/privacy': 'Read how Paid Before Ship Gate keeps records and files in your browser.',
+  '/terms': 'Read the Paid Before Ship Gate terms and desk kit purchase details.'
+};
+
 function setMetadata(path: string): void {
-  document.title = titles[path] ?? 'Page not found — Paid Before Ship Gate';
+  const route = isDemoRoute() ? '/demo' : path;
+  document.title = titles[route] ?? 'Page not found — Paid Before Ship Gate';
   const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
-  if (canonical) canonical.href = `https://paid-before-ship-gate.sociobot.in${path}`;
+  if (canonical) canonical.href = `https://paid-before-ship-gate.sociobot.in${route}`;
+  const description = descriptions[route] ?? 'This address is not part of Paid Before Ship Gate.';
+  for (const selector of ['meta[name="description"]', 'meta[property="og:description"]', 'meta[name="twitter:description"]']) {
+    document.querySelector<HTMLMetaElement>(selector)?.setAttribute('content', description);
+  }
+  for (const selector of ['meta[property="og:title"]', 'meta[name="twitter:title"]']) {
+    document.querySelector<HTMLMetaElement>(selector)?.setAttribute('content', document.title);
+  }
 }
 
 async function persist(): Promise<void> {
@@ -39,11 +56,11 @@ async function persist(): Promise<void> {
 
 function render(focusHeading = false): void {
   const path = currentPath();
-  demo = path === '/demo';
+  demo = isDemoRoute();
   setMetadata(path);
   document.body.dataset.vaultOpen = String(vaultIsOpen());
-  if (path === '/') root.innerHTML = home();
-  else if (path === '/demo') root.innerHTML = board(data, true, filter, true);
+  if (demo) root.innerHTML = board(data, true, filter, true);
+  else if (path === '/') root.innerHTML = home();
   else if (path === '/board') root.innerHTML = locked ? lockedPage() : board(data, false, filter, paid);
   else if (path === '/privacy') root.innerHTML = legalPage('privacy');
   else if (path === '/terms') root.innerHTML = legalPage('terms');
@@ -52,7 +69,9 @@ function render(focusHeading = false): void {
     notice(recoveryMessage, true);
     recoveryMessage = '';
   }
-  if (focusHeading) requestAnimationFrame(() => root.querySelector<HTMLElement>('h1')?.focus());
+  const announce = document.querySelector<HTMLElement>('#route-announcement');
+  if (announce) announce.textContent = document.title;
+  if (focusHeading) requestAnimationFrame(() => root.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true }));
 }
 
 function lockedPage(): string {
@@ -60,9 +79,10 @@ function lockedPage(): string {
 }
 
 async function navigate(path: string): Promise<void> {
-  history.pushState({}, '', path);
+  history.replaceState({ ...(history.state ?? {}), scrollX: window.scrollX, scrollY: window.scrollY }, '', location.href);
+  history.pushState({ scrollX: 0, scrollY: 0 }, '', path);
   filter = 'all';
-  if (path === '/demo') data = sampleData();
+  if (path === '/demo' || new URL(path, location.origin).searchParams.get('demo') === '1') data = sampleData();
   if (path === '/board' && demo) await loadRealData();
   render(true); window.scrollTo(0, 0);
 }
@@ -119,10 +139,10 @@ function orderDialog(): void {
   dialog.addEventListener('close', () => dialog.remove());
 }
 
-function overrideDialog(order: Order): void {
-  const dialog = dialogShell(`<form method="dialog" class="dialog-form" id="override-form"><div class="dialog-head"><h2>Clear ${escapeHtml(order.orderNumber)} with an override</h2><button class="icon-button" type="button" data-close aria-label="Close dialog">×</button></div><p>This puts the order on the pack list without full payment.</p><label>Your name<input name="name" required autocomplete="name"></label><label>Reason<textarea name="reason" required minlength="4" rows="3"></textarea></label><button class="button danger" value="default">Record override</button></form>`);
+function approvalDialog(order: Order): void {
+  const dialog = dialogShell(`<form method="dialog" class="dialog-form" id="approval-form"><div class="dialog-head"><h2>Approve ${escapeHtml(order.orderNumber)} without full payment</h2><button class="icon-button" type="button" data-close aria-label="Close dialog">×</button></div><p>This puts the order on the pack list without full payment.</p><label>Your name<input name="name" required autocomplete="name"></label><label>Reason<textarea name="reason" required minlength="4" rows="3"></textarea></label><button class="button danger" value="default">Record approval</button></form>`);
   dialog.querySelector<HTMLInputElement>('input')?.focus();
-  dialog.querySelector('form')?.addEventListener('submit', async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget as HTMLFormElement); order.override = { name: String(form.get('name')), reason: String(form.get('reason')), at: new Date().toISOString() }; data.history.unshift(`Override for ${order.orderNumber} by ${order.override.name}`); await persist(); dialog.close(); dialog.remove(); render(); notice(`${order.orderNumber} is ready with a named override.`); });
+  dialog.querySelector('form')?.addEventListener('submit', async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget as HTMLFormElement); order.override = { name: String(form.get('name')), reason: String(form.get('reason')), at: new Date().toISOString() }; data.history.unshift(`Approval for ${order.orderNumber} by ${order.override.name}`); await persist(); dialog.close(); dialog.remove(); render(); notice(`${order.orderNumber} is ready with a named approval.`); });
   dialog.addEventListener('close', () => dialog.remove());
 }
 
@@ -161,8 +181,13 @@ root.addEventListener('click', async (event) => {
   if (action === 'vault') vaultDialog();
   const row = button.closest<HTMLElement>('[data-order-id]'); const order = row ? data.orders.find((item) => item.id === row.dataset.orderId) : undefined;
   if (action === 'toggle-hold' && order) { order.hold = !order.hold; if (!order.hold) order.override = undefined; await persist(); render(); notice(`${order.orderNumber} ${order.hold ? 'now requires payment' : 'no longer has a payment hold'}.`); }
-  if (action === 'override' && order) overrideDialog(order);
-  if (action === 'save-rule' && order) { data.rules = data.rules.filter((rule) => rule.customer.toLowerCase() !== order.customer.toLowerCase()); data.rules.push({ customer: order.customer, hold: order.hold }); await persist(); notice(`Future ${order.customer} imports will ${order.hold ? 'require payment' : 'skip the payment hold'}.`); }
+  if (action === 'approval' && order) approvalDialog(order);
+  if (action === 'restore-packed' && order) { delete order.packedAt; data.history.unshift(`Returned ${order.orderNumber} to the active board`); await persist(); render(); notice(`${order.orderNumber} returned to the active board.`); }
+  if (action === 'save-rule' && order) { data.rules = data.rules.filter((rule) => rule.customer.toLowerCase() !== order.customer.toLowerCase()); data.rules.push({ customer: order.customer, hold: order.hold }); await persist(); notice(`Customer hold rule saved for ${order.customer}.`); }
+  if (action === 'mark-packed') {
+    const packable = data.orders.filter(isReady);
+    if (packable.length) { const packedAt = new Date().toISOString(); packable.forEach((item) => { item.packedAt = packedAt; }); data.history.unshift(`Marked ${packable.length} orders packed`); await persist(); render(); notice(`${packable.length} ready ${packable.length === 1 ? 'order was' : 'orders were'} marked packed. Find them in Packed and return any by mistake.`); }
+  }
 });
 
 root.addEventListener('change', async (event) => {
@@ -184,7 +209,7 @@ root.addEventListener('submit', async (event) => {
   catch (error) { document.querySelector('#unlock-error')!.textContent = (error as Error).message; }
 });
 
-window.addEventListener('popstate', async () => { const path = currentPath(); if (path === '/demo') data = sampleData(); else if (path === '/board') await loadRealData(); render(true); });
+window.addEventListener('popstate', async (event) => { const path = currentPath(); if (isDemoRoute()) data = sampleData(); else if (path === '/board') await loadRealData(); render(true); const state = event.state as { scrollX?: number; scrollY?: number } | null; requestAnimationFrame(() => window.scrollTo(state?.scrollX ?? 0, state?.scrollY ?? 0)); });
 
 function networkNotice(): void {
   let node = document.querySelector<HTMLElement>('.offline-note');
@@ -195,7 +220,8 @@ window.addEventListener('online', networkNotice); window.addEventListener('offli
 
 async function start(): Promise<void> {
   captureLicense(); paid = hasPaidAccess(); void verifyLicense().then((valid) => { if (valid !== paid) { paid = valid; render(); } });
-  demo = currentPath() === '/demo'; data = demo ? sampleData() : { orders: [], rules: [], history: [] };
+  history.replaceState({ ...(history.state ?? {}), scrollX: window.scrollX, scrollY: window.scrollY }, '', location.href);
+  demo = isDemoRoute(); data = demo ? sampleData() : { orders: [], rules: [], history: [] };
   if (currentPath() === '/board') await loadRealData();
   render(); networkNotice();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').then((registration) => {

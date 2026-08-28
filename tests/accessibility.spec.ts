@@ -28,6 +28,23 @@ test('supports a 390px mobile viewport and keyboard path', async ({ page }) => {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
+test('restores scroll position and moves focus to the route heading on browser Back', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => window.scrollTo(0, 900));
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
+  await page.locator('footer').getByRole('link', { name: 'Privacy' }).click();
+  await expect(page.getByRole('heading', { name: 'Your records stay under your control' })).toBeFocused();
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: 'Stop unpaid orders before packing' })).toBeFocused();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
+});
+
+test('ships a complete shared 404 shell and metadata', async () => {
+  const page404 = await readFile('dist/404.html', 'utf8');
+  for (const text of ['<header>', '<footer>', 'name="description"', 'rel="canonical"', 'property="og:title"', 'name="twitter:card"', 'apple-touch-icon', 'Skip to content', 'Privacy', 'Terms']) expect(page404).toContain(text);
+  expect(page404).toContain('<h1 tabindex="-1">This page missed the pack list</h1>');
+});
+
 test('keeps mobile touch targets usable and reflows filters at 200% text', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/demo');
@@ -35,7 +52,7 @@ test('keeps mobile touch targets usable and reflows filters at 200% text', async
     page.getByRole('link', { name: 'Paid Before Ship Gate home' }),
     page.getByRole('button', { name: 'Reset demo' }),
     page.getByRole('link', { name: 'Start for real' }),
-    page.locator('[data-order-id="sample-2"]').getByRole('button', { name: 'Record override' }),
+    page.locator('[data-order-id="sample-2"]').getByRole('button', { name: 'Record approval' }),
     page.locator('footer').getByRole('link', { name: 'Privacy' }),
     page.locator('footer').getByRole('link', { name: 'Terms' })
   ]) {
@@ -85,7 +102,7 @@ test('configures known SPA routes, real 404 responses, and safe cache policies',
   }));
 
   const worker = await readFile('dist/sw.js', 'utf8');
-  expect(worker).toContain("const VERSION = 'pbsg-v3'");
+  expect(worker).toContain("const VERSION = 'pbsg-v4'");
   expect(worker).toContain('self.skipWaiting()');
   expect(worker).toContain('self.clients.claim()');
 });

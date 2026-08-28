@@ -77,6 +77,7 @@ p, li { font-size: 1.06rem; line-height: 1.55; }
 .status { display: inline-flex; align-items: center; min-height: 32px; width: fit-content; padding: 4px 9px; border: 2px solid currentColor; font-size: .9rem; font-weight: 700; white-space: nowrap; }
 .status.ready { color: #1f6244; background: #e4f2e7; transform: rotate(-1deg); }
 .status.held { color: var(--coral-dark); background: #fae2d8; transform: rotate(1deg); }
+.status.packed { color: var(--blue-dark); background: #dcecf0; transform: rotate(-1deg); }
 .how { display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(40px, 8vw, 120px); background: var(--ink); color: var(--paper-light); }
 .how .eyebrow { color: #ff8d7b; }
 .how ol { margin: 0; padding: 0; list-style: none; }
@@ -121,6 +122,7 @@ footer a { min-width: 44px; min-height: 44px; display: inline-flex; align-items:
 .order-row { display: grid; grid-template-columns: 1.3fr .7fr; gap: 32px; padding: 22px 18px; border: var(--rule); border-top: 0; background: var(--paper-light); transition: transform 180ms ease; }
 .order-row.is-held { border-left: 10px solid var(--coral); }
 .order-row.is-ready { border-left: 10px solid var(--green); }
+.order-row.is-packed { border-left: 10px solid var(--blue); opacity: .82; }
 .order-row.is-ready .status { animation: stamp-down 180ms ease-out; }
 .order-main { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center; }
 .order-number { color: var(--muted); font-size: .9rem; font-weight: 700; letter-spacing: .08em; }
@@ -207,8 +209,11 @@ code { padding: 2px 5px; background: #e8dfca; }
   .filter-bar { display: grid; grid-template-columns: 1fr; border-bottom: 0; gap: 8px; }
   .filter-bar button { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; border: var(--rule); }
   .order-row { padding: 18px 12px; }
-  .order-main { grid-template-columns: 1fr; gap: 10px; }
+  .order-main { min-width: 0; grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .money { justify-items: start; }
+  .order-gate, .order-gate > * { min-width: 0; }
+  .status { white-space: normal; }
+  .save-rule { overflow-wrap: anywhere; }
   .desk-settings { grid-template-columns: 1fr; }
   .settings-actions { justify-content: flex-start; }
   footer { grid-template-columns: 1fr; }

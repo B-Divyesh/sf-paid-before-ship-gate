@@ -7,6 +7,7 @@ export type Order = {
   currency: string;
   hold: boolean;
   createdAt: string;
+  packedAt?: string;
   override?: { name: string; reason: string; at: string };
 };
 
@@ -19,4 +20,4 @@ export type AppData = {
   paymentKeys?: string[];
 };
 
-export type Filter = 'all' | 'ready' | 'hold';
+export type Filter = 'all' | 'ready' | 'hold' | 'packed';

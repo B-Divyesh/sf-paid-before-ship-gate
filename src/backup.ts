@@ -45,6 +45,7 @@ function order(value: unknown, index: number): Order {
     currency,
     hold: value.hold,
     createdAt: text(value.createdAt, `Order ${orderNumber} date`),
+    ...(value.packedAt === undefined ? {} : { packedAt: text(value.packedAt, `Order ${orderNumber} packed date`) }),
     ...(override ? { override } : {})
   };
 }

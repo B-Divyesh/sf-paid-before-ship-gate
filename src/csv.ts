@@ -56,6 +56,7 @@ export function importOrders(text: string, data: AppData): { data: AppData; coun
       currency,
       hold: ['yes', 'true', '1', 'hold'].includes(holdValue) || ruleHold,
       createdAt: cell(row, headers, ['date', 'orderdate']) || previous?.createdAt || new Date().toISOString().slice(0, 10),
+      packedAt: previous?.packedAt,
       override: previous?.override
     };
     known.set(orderNumber, next); count += 1;
@@ -68,12 +69,16 @@ export function importPayments(text: string, data: AppData): { data: AppData; co
   if (!headers) throw new Error('The file has no header row. Add order_number and amount.');
   let count = 0;
   const payments = new Map<string, number>();
-  const knownOrders = new Set(data.orders.map((order) => order.orderNumber));
+  const knownOrders = new Map(data.orders.map((order) => [order.orderNumber, order]));
   const seen = new Set(data.paymentKeys ?? []);
   for (const row of rows) {
     const orderNumber = cell(row, headers, ['ordernumber', 'order', 'orderno']);
     const amount = Number(cell(row, headers, ['amount', 'paid', 'paymentamount']).replace(/[^0-9.-]/g, ''));
-    if (!orderNumber || !Number.isFinite(amount) || amount <= 0 || !knownOrders.has(orderNumber)) continue;
+    const order = knownOrders.get(orderNumber);
+    if (!orderNumber || !Number.isFinite(amount) || amount <= 0 || !order) continue;
+    const paymentCurrency = (cell(row, headers, ['currency', 'currencycode']) || 'USD').toUpperCase();
+    if (!/^[A-Z]{3}$/.test(paymentCurrency)) throw new Error(`Payment for ${orderNumber} has an invalid currency. Use a three-letter code such as USD.`);
+    if (paymentCurrency !== order.currency) throw new Error(`Payment for ${orderNumber} is ${paymentCurrency}, but the order is ${order.currency}. It was not matched.`);
     const source = row.map((value) => value.trim().toLowerCase()).join('|');
     let hash = 5381;
     for (let index = 0; index < source.length; index += 1) hash = ((hash << 5) + hash) ^ source.charCodeAt(index);
@@ -90,7 +95,7 @@ export function importPayments(text: string, data: AppData): { data: AppData; co
 export function packListCsv(orders: Order[]): string {
   const ready = orders.filter(isReady);
   const quote = (value: string | number) => `"${String(value).replaceAll('"', '""')}"`;
-  return ['order_number,customer,total,currency,clearance', ...ready.map((order) => [order.orderNumber, order.customer, order.total.toFixed(2), order.currency || 'USD', order.override ? `Override by ${order.override.name}: ${order.override.reason}` : order.hold ? 'Paid' : 'No payment hold'].map(quote).join(','))].join('\n');
+  return ['order_number,customer,total,currency,clearance', ...ready.map((order) => [order.orderNumber, order.customer, order.total.toFixed(2), order.currency || 'USD', order.override ? `Approval by ${order.override.name}: ${order.override.reason}` : order.hold ? 'Paid' : 'No payment hold'].map(quote).join(','))].join('\n');
 }
 
-export const isReady = (order: Order) => !order.hold || order.paid >= order.total || Boolean(order.override);
+export const isReady = (order: Order) => !order.packedAt && (!order.hold || order.paid >= order.total || Boolean(order.override));

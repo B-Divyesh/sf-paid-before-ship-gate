@@ -1,4 +1,4 @@
-const VERSION = 'pbsg-v3';
+const VERSION = 'pbsg-v4';
 const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/favicon.svg', '/assets/dispatch-gate.webp', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {

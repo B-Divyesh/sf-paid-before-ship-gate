@@ -1,35 +1,53 @@
-# Review 1 handoff — FAIL
+# Polish 1 handoff — ready to deploy
 
-Adversarial first-read review 1 is complete at candidate `40c3832c96067d0d91741eedf18e39c239ad5c60`. Product source was not modified. The complete report is `.factory/review-1.md`.
+Repair commit: `a6147d02e6ba1bce67208044d2bbb9c32aaa5163` (final documentation/deploy evidence is added with the deployment commit).
 
-## Outcome
+## What changed
 
-The first screen and live demo are clear and usable, all 13 declared claim commands exit successfully, and both local and production Playwright suites pass 21/21. The release still fails with 3 blocking findings: cross-currency payments can clear held orders, completed orders cannot leave later daily pack lists, and the demo-isolation claim test does not seed/protect existing real data.
+- Closed every F-1-1 through F-1-25 finding in `.factory/review-1.md`; the exact mapping is in `.factory/polish-1.md`.
+- Payment imports now require the payment currency to match the order currency before a held order can clear.
+- Completed pack batches can be marked packed, stay out of later exports, appear in a Packed view, and be returned to the active board.
+- `?demo=1` is the first-screen, one-click isolated demo, with a persistent banner, reset, and real-workspace exit.
+- Completed the claims registry with 23 observable, tagged browser tests, including full backup round trip, privacy boundaries, license networking, and offline reload.
+- Rewrote first-screen, README, and legal copy in plain language; standardized **approval** and **customer hold rule**.
+- Added per-route metadata updates, scroll restoration with focused route headings, and a complete static 404 shell.
 
-The report also records incomplete/unlisted claims, inconsistent merchant-of-record copy, missing 404 shell/metadata, lost Back-button scroll position, and plain-language issues.
+## Verification
 
-## Verification performed
+Local final source:
+
+```sh
+npm test                 # 33/33 Playwright tests passed
+npm run lint             # passed
+npm run typecheck        # passed
+npm run build            # passed; dist/index.html exists
+```
+
+The 33-test browser suite includes Axe serious/critical checks on `/`, `/?demo=1`, `/board`, `/privacy`, and `/terms`; mobile 390 px, 200% text, keyboard, route focus/scroll restoration, static 404 metadata, privacy, and offline reload coverage.
+
+Fresh-clone claim evidence:
+
+```sh
+git clone --no-local /work/repo <temporary-clean-clone>
+npm ci
+# each exact command listed in .factory/claims.json, independently
+npm test -- --grep @claim:<id>
+```
+
+All 23 declared claim tags passed independently after the fresh install. The bundle is 36.09 KB raw / 11.81 KB gzip JavaScript and 18.29 KB raw / 4.76 KB gzip CSS.
+
+## Run and deploy
 
 ```sh
 npm ci
-# Every exact test command in .factory/claims.json, independently
-npm run lint
+npm run dev
 npm test
-npm run test:live
-PLAYWRIGHT_BASE_URL=https://paid-before-ship-gate.sociobot.in npx playwright test
-VERIFY_NODE_MODULES=/work/repo/node_modules /opt/fleet/lib/verify-url.sh https://paid-before-ship-gate.sociobot.in <temp-dir>
+npm run build
+/opt/fleet/lib/deploy-static.sh paid-before-ship-gate dist
 ```
 
-Observed results:
+After deployment, run `npm run test:live`, `/opt/fleet/lib/verify-url.sh`, and an Axe scan against `https://paid-before-ship-gate.sociobot.in`.
 
-- 13/13 declared claim commands exited 0; scope gaps are documented in the review.
-- Local suite: 21/21 passed; build produced `dist/`.
-- Live suite: 21/21 passed.
-- URL verifier: HTTP 200, 662 ms, no console errors, one `h1`, one `main`, complete image alt/button names.
-- Live link crawl: no dead links; checkout redirected to Dodo.
-- Live demo reset and real-data separation behavior passed manually.
-- No prior handoff repair regressed.
+## Known gaps
 
-## Remaining work
-
-Address all findings in `.factory/review-1.md` (F-1-1 through F-1-25), then rerun the full review from a fresh context. No infrastructure, DNS, billing, or product code was changed during this review.
+None. Deployment and cold live verification are the remaining work-order steps and are recorded after they complete.
