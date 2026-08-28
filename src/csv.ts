@@ -41,12 +41,15 @@ export function importOrders(text: string, data: AppData): { data: AppData; coun
     const customer = cell(row, headers, ['customer', 'customername', 'name']) || 'Redacted customer';
     const total = Number(cell(row, headers, ['total', 'amount', 'ordertotal']).replace(/[^0-9.-]/g, ''));
     if (!Number.isFinite(total) || total < 0) throw new Error(`Order ${orderNumber} has an invalid total. Fix that row and try again.`);
-    const holdValue = cell(row, headers, ['hold', 'holduntilpaid', 'paymentrequired']).toLowerCase();
-    const ruleHold = data.rules.some((rule) => normalize(rule.customer) === normalize(customer) && rule.hold);
     const previous = known.get(orderNumber);
+    const holdValue = cell(row, headers, ['hold', 'holduntilpaid', 'paymentrequired']).toLowerCase();
+    const currency = (cell(row, headers, ['currency', 'currencycode']) || previous?.currency || 'USD').toUpperCase();
+    if (!/^[A-Z]{3}$/.test(currency)) throw new Error(`Order ${orderNumber} has an invalid currency. Use a three-letter code such as USD.`);
+    const ruleHold = data.rules.some((rule) => normalize(rule.customer) === normalize(customer) && rule.hold);
     const next: Order = {
       id: previous?.id ?? crypto.randomUUID(), orderNumber, customer, total,
       paid: previous?.paid ?? 0,
+      currency,
       hold: ['yes', 'true', '1', 'hold'].includes(holdValue) || ruleHold,
       createdAt: cell(row, headers, ['date', 'orderdate']) || previous?.createdAt || new Date().toISOString().slice(0, 10),
       override: previous?.override
@@ -83,7 +86,7 @@ export function importPayments(text: string, data: AppData): { data: AppData; co
 export function packListCsv(orders: Order[]): string {
   const ready = orders.filter(isReady);
   const quote = (value: string | number) => `"${String(value).replaceAll('"', '""')}"`;
-  return ['order_number,customer,total,clearance', ...ready.map((order) => [order.orderNumber, order.customer, order.total.toFixed(2), order.override ? `Override by ${order.override.name}: ${order.override.reason}` : order.hold ? 'Paid' : 'No payment hold'].map(quote).join(','))].join('\n');
+  return ['order_number,customer,total,currency,clearance', ...ready.map((order) => [order.orderNumber, order.customer, order.total.toFixed(2), order.currency || 'USD', order.override ? `Override by ${order.override.name}: ${order.override.reason}` : order.hold ? 'Paid' : 'No payment hold'].map(quote).join(','))].join('\n');
 }
 
 export const isReady = (order: Order) => !order.hold || order.paid >= order.total || Boolean(order.override);

@@ -57,7 +57,7 @@ test('@claim:csv-export exports one row for every ready order', async ({ page })
   const download = await downloadEvent;
   const text = await (await download.createReadStream()).toArray().then((parts) => Buffer.concat(parts).toString());
   expect(text.trim().split('\n')).toHaveLength(4);
-  expect(text).toContain('order_number,customer,total,clearance');
+  expect(text).toContain('order_number,customer,total,currency,clearance');
 });
 
 test('@claim:json-backup exports a complete local workspace', async ({ page }) => {

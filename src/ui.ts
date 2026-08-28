@@ -3,7 +3,7 @@ import { isReady } from './csv';
 import { checkoutUrl } from './license';
 
 export const escapeHtml = (value: unknown) => String(value).replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]!);
-export const money = (amount: number) => new Intl.NumberFormat('en', { style: 'currency', currency: 'USD' }).format(amount);
+export const money = (amount: number, currency = 'USD') => new Intl.NumberFormat('en', { style: 'currency', currency }).format(amount);
 
 export function header(active = ''): string {
   return `<a class="skip-link" href="#main">Skip to content</a>
@@ -26,7 +26,8 @@ export function home(): string {
 function orderRow(order: Order, demo: boolean, paidAccess: boolean): string {
   const ready = isReady(order);
   const due = Math.max(0, order.total - order.paid);
-  return `<article class="order-row ${ready ? 'is-ready' : 'is-held'}" data-order-id="${escapeHtml(order.id)}"><div class="order-main"><div><span class="order-number">${escapeHtml(order.orderNumber)}</span><h3>${escapeHtml(order.customer)}</h3><span class="order-date">${escapeHtml(order.createdAt)}</span></div><div class="money"><strong>${money(order.total)}</strong><span>${money(order.paid)} paid</span></div></div><div class="order-gate"><span class="status ${ready ? 'ready' : 'held'}">${ready ? (order.override ? 'Ready · override' : order.hold ? 'Ready · paid' : 'Ready · no hold') : `Hold · ${money(due)} due`}</span><button class="text-button" data-action="toggle-hold" aria-pressed="${order.hold}">${order.hold ? 'Remove payment hold' : 'Require payment'}</button>${!ready ? `<button class="button small" data-action="override">Record override</button>` : ''}${order.override ? `<p class="override-note">${escapeHtml(order.override.name)}: ${escapeHtml(order.override.reason)}</p>` : ''}${paidAccess || demo ? `<button class="text-button save-rule" data-action="save-rule">Apply this hold to ${escapeHtml(order.customer)}</button>` : ''}</div></article>`;
+  const currency = order.currency || 'USD';
+  return `<article class="order-row ${ready ? 'is-ready' : 'is-held'}" data-order-id="${escapeHtml(order.id)}"><div class="order-main"><div><span class="order-number">${escapeHtml(order.orderNumber)}</span><h3>${escapeHtml(order.customer)}</h3><span class="order-date">${escapeHtml(order.createdAt)}</span></div><div class="money"><strong>${money(order.total, currency)}</strong><span>${money(order.paid, currency)} paid</span></div></div><div class="order-gate"><span class="status ${ready ? 'ready' : 'held'}">${ready ? (order.override ? 'Ready · override' : order.hold ? 'Ready · paid' : 'Ready · no hold') : `Hold · ${money(due, currency)} due`}</span><button class="text-button" data-action="toggle-hold" aria-pressed="${order.hold}">${order.hold ? 'Remove payment hold' : 'Require payment'}</button>${!ready ? `<button class="button small" data-action="override">Record override</button>` : ''}${order.override ? `<p class="override-note">${escapeHtml(order.override.name)}: ${escapeHtml(order.override.reason)}</p>` : ''}${paidAccess || demo ? `<button class="text-button save-rule" data-action="save-rule">Apply this hold to ${escapeHtml(order.customer)}</button>` : ''}</div></article>`;
 }
 
 export function board(data: AppData, demo: boolean, filter: Filter, paidAccess: boolean): string {

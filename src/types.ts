@@ -4,6 +4,7 @@ export type Order = {
   customer: string;
   total: number;
   paid: number;
+  currency: string;
   hold: boolean;
   createdAt: string;
   override?: { name: string; reason: string; at: string };

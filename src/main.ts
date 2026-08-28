@@ -100,13 +100,13 @@ async function readFile(input: HTMLInputElement, kind: 'orders' | 'payments' | '
 }
 
 function orderDialog(): void {
-  const dialog = dialogShell(`<form method="dialog" class="dialog-form" id="order-form"><div class="dialog-head"><h2>Add one order</h2><button class="icon-button" type="button" data-close aria-label="Close dialog">×</button></div><label>Order number<input name="orderNumber" required autocomplete="off"></label><label>Customer name <span>(optional)</span><input name="customer" autocomplete="organization"></label><label>Order total<input name="total" type="number" min="0" step="0.01" required inputmode="decimal"></label><label class="check-label"><input name="hold" type="checkbox" checked> Hold until fully paid</label><button class="button primary" value="default">Add order</button><p class="field-error" aria-live="assertive"></p></form>`);
+  const dialog = dialogShell(`<form method="dialog" class="dialog-form" id="order-form"><div class="dialog-head"><h2>Add one order</h2><button class="icon-button" type="button" data-close aria-label="Close dialog">×</button></div><label>Order number<input name="orderNumber" required autocomplete="off"></label><label>Customer name <span>(optional)</span><input name="customer" autocomplete="organization"></label><div class="form-pair"><label>Order total<input name="total" type="number" min="0" step="0.01" required inputmode="decimal"></label><label>Currency<select name="currency"><option>USD</option><option>GBP</option><option>EUR</option><option>INR</option><option>CAD</option><option>AUD</option></select></label></div><label class="check-label"><input name="hold" type="checkbox" checked> Hold until fully paid</label><button class="button primary" value="default">Add order</button><p class="field-error" aria-live="assertive"></p></form>`);
   dialog.querySelector<HTMLInputElement>('input')?.focus();
   dialog.querySelector('form')?.addEventListener('submit', async (event) => {
     event.preventDefault(); const form = new FormData(event.currentTarget as HTMLFormElement);
     const orderNumber = String(form.get('orderNumber') ?? '').trim(); const total = Number(form.get('total'));
     if (data.orders.some((order) => order.orderNumber.toLowerCase() === orderNumber.toLowerCase())) { dialog.querySelector('.field-error')!.textContent = 'That order number already exists. Use a different number.'; return; }
-    const order: Order = { id: crypto.randomUUID(), orderNumber, customer: String(form.get('customer') ?? '').trim() || 'Redacted customer', total, paid: 0, hold: form.has('hold'), createdAt: new Date().toISOString().slice(0, 10) };
+    const order: Order = { id: crypto.randomUUID(), orderNumber, customer: String(form.get('customer') ?? '').trim() || 'Redacted customer', total, paid: 0, currency: String(form.get('currency') ?? 'USD'), hold: form.has('hold'), createdAt: new Date().toISOString().slice(0, 10) };
     data.orders.push(order); data.history.unshift(`Added ${orderNumber}`); await persist(); dialog.close(); dialog.remove(); render(); notice(`${orderNumber} added to the board.`);
   });
   dialog.addEventListener('close', () => dialog.remove());

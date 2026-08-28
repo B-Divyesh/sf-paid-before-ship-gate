@@ -27,11 +27,11 @@ It does not process payments, score customers, collect debts, reserve stock, or 
 Orders:
 
 ```csv
-order_number,customer,total,hold,date
-SO-1048,Moss & Thread,186.00,yes,2026-08-27
+order_number,customer,total,currency,hold,date
+SO-1048,Moss & Thread,186.00,USD,yes,2026-08-27
 ```
 
-The `customer`, `hold`, and `date` columns are optional. Omit them for a redacted import.
+The `customer`, `currency`, `hold`, and `date` columns are optional. Omit customer details for a redacted import. Currency defaults to USD.
 
 Payments:
 

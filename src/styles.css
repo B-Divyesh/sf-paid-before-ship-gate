@@ -21,7 +21,7 @@
 html { scroll-behavior: smooth; }
 body { margin: 0; min-width: 320px; min-height: 100vh; background-color: var(--paper); background-image: radial-gradient(rgba(23,42,45,.08) .6px, transparent .8px); background-size: 5px 5px; color: var(--ink); }
 body::before { content: ''; position: fixed; inset: 0; opacity: .12; pointer-events: none; z-index: 10; background-image: repeating-linear-gradient(93deg, transparent 0 12px, rgba(207,63,53,.18) 13px, transparent 14px 23px); mix-blend-mode: multiply; }
-button, input, textarea { font: inherit; }
+button, input, textarea, select { font: inherit; }
 button, .button { min-height: 44px; }
 a { color: var(--blue-dark); text-underline-offset: 3px; text-decoration-thickness: 2px; }
 a:hover { text-decoration-thickness: 3px; }
@@ -150,8 +150,9 @@ footer p { margin: 0; font-size: .92rem; line-height: 1.5; }
 .locked-page h1 { margin-left: auto; margin-right: auto; }
 .stack-form { max-width: 430px; display: grid; gap: 10px; margin: 28px auto 0; text-align: left; }
 .stack-form label, .dialog-form label { font-weight: 700; }
-input, textarea { width: 100%; min-height: 48px; margin-top: 6px; padding: 10px 12px; border: 2px solid var(--ink); border-radius: 0; color: var(--ink); background: white; }
+input, textarea, select { width: 100%; min-height: 48px; margin-top: 6px; padding: 10px 12px; border: 2px solid var(--ink); border-radius: 0; color: var(--ink); background: white; }
 textarea { min-height: 96px; resize: vertical; }
+.form-pair { display: grid; grid-template-columns: 1fr 120px; gap: 12px; }
 .field-error { min-height: 24px; margin: 0; color: var(--coral-dark); font-size: .92rem; font-weight: 700; }
 
 .app-dialog { width: min(560px, calc(100% - 28px)); max-height: calc(100svh - 28px); padding: 0; border: var(--rule); border-radius: 0; color: var(--ink); background: var(--paper-light); box-shadow: 10px 10px 0 var(--coral); }

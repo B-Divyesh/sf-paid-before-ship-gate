@@ -22,7 +22,7 @@ export function hasPaidAccess(): boolean {
 
 export function saveLicense(token: string): void {
   localStorage.setItem(KEY, token.trim());
-  localStorage.setItem(CACHE, JSON.stringify({ valid: true, checkedAt: 0 }));
+  localStorage.removeItem(CACHE);
 }
 
 export async function verifyLicense(force = false): Promise<boolean> {
