@@ -1,6 +1,6 @@
 # Polish 1 handoff — ready to deploy
 
-Repair commit: `a6147d02e6ba1bce67208044d2bbb9c32aaa5163` (final documentation/deploy evidence is added with the deployment commit).
+Repair source commit: `4e7d78841caf9b2e9717787bc2a42b105485c34d` (verification handoff is committed immediately after this update).
 
 ## What changed
 
@@ -48,6 +48,18 @@ npm run build
 
 After deployment, run `npm run test:live`, `/opt/fleet/lib/verify-url.sh`, and an Axe scan against `https://paid-before-ship-gate.sociobot.in`.
 
+## Deployment and live verification
+
+Static production deployment `a09ce064-539e-472f-bdbd-92e0a35e956a` completed through `/opt/fleet/lib/deploy-static.sh`.
+
+- `https://paid-before-ship-gate.sociobot.in/` cold-loaded the deployed `index-BtXDFl-1.js` bundle with HTTP 200.
+- `https://paid-before-ship-gate.sociobot.in/definitely-not-a-route` returned HTTP 404 and the complete 404 shell.
+- `PLAYWRIGHT_BASE_URL=https://paid-before-ship-gate.sociobot.in npx playwright test`: 33/33 passed.
+- `npm run test:live`: passed.
+- `/opt/fleet/lib/verify-url.sh`: passed: 643 ms, correct title/lang/h1/main, no missing image alt text, no unnamed buttons, and no console errors.
+- Live screenshots are `.factory/verification-artifacts/polish-1-live-home.png` and `.factory/verification-artifacts/polish-1-live-demo-mobile.png`.
+- The standalone Axe CLI could not locate a Selenium Chrome binary. The already-installed `@axe-core/playwright` integration ran in the full live suite on every app route with zero serious/critical violations.
+
 ## Known gaps
 
-None. Deployment and cold live verification are the remaining work-order steps and are recorded after they complete.
+None.

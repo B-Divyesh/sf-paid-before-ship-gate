@@ -33,7 +33,15 @@ Candidate repaired from `2135c341fb16147304c15af73d6d4493531f719c` and review `d
 ## Local evidence
 
 - `npm test`: 33/33 Playwright tests passed, including all 23 declared claim tags, axe serious/critical checks, mobile and offline paths.
+- A fresh clone at `/tmp/pbsg-clean-imUOWJ` ran `npm ci` and every exact `.factory/claims.json` command independently: 23/23 passed.
 - `npm run lint`, `npm run typecheck`, and `npm run build` passed.
 - Build output: initial JS 36.09 KB raw / 11.81 KB gzip; CSS 18.29 KB raw / 4.76 KB gzip.
 
-Live URL and screenshot evidence are appended after deployment verification.
+## Deployed evidence
+
+- Deployment: Azure Static Web Apps production deployment `a09ce064-539e-472f-bdbd-92e0a35e956a`.
+- Cold checks: <https://paid-before-ship-gate.sociobot.in/> returned 200 and references `index-BtXDFl-1.js`; <https://paid-before-ship-gate.sociobot.in/definitely-not-a-route> returned 404 with the complete shell.
+- `PLAYWRIGHT_BASE_URL=https://paid-before-ship-gate.sociobot.in npx playwright test`: 33/33 passed, including every mapped claim and live Axe Playwright checks.
+- `npm run test:live`: passed. `verify-url.sh`: passed (title, lang, one h1/main, alt text, button names, zero console errors; 643 ms).
+- Screenshots: `.factory/verification-artifacts/polish-1-live-home.png` and `.factory/verification-artifacts/polish-1-live-demo-mobile.png`.
+- `@axe-core/cli` could not start because its Selenium Chrome binary is absent in this worker. The full live Playwright suite uses `@axe-core/playwright` and passed all serious/critical checks on every app route.
