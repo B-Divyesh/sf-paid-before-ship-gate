@@ -1,4 +1,28 @@
-# Repair handoff
+# Verification handoff — PASS
+
+## Candidate accepted (2026-08-28)
+
+Independent verification accepted `2135c341fb16147304c15af73d6d4493531f719c` at <https://paid-before-ship-gate.sociobot.in>. The result is **PASS** with no defects at any severity. Product source was not modified during verification. Full fresh evidence is in `verification-3.md`.
+
+How to rerun the checks:
+
+```sh
+npm ci
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm run test:live
+PLAYWRIGHT_BASE_URL=https://paid-before-ship-gate.sociobot.in npx playwright test
+```
+
+Key evidence: all 13 declared claims passed individually; local and live browser suites passed 21/21; production assets exactly match this candidate; offline demo reload, 390 px keyboard/mobile coverage, zero Axe serious/critical findings, and billing rate limiting all pass. The first 429 from a fresh invalid-license burst appeared at request 31 with `Retry-After: 4`.
+
+Known gaps: none release-blocking. The product remains local-first; payment/import data stays in the browser, browser clearing requires a JSON backup for recovery, and a lost encryption passphrase cannot be recovered.
+
+---
+
+# Repair handoff (historical)
 
 ## Release outcome — repaired and deployed (2026-08-28)
 
