@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://paid-before-ship-gate.sociobot.in/sitemap.xml
