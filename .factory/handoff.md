@@ -1,38 +1,72 @@
-# Independent QA handoff
+# Repair handoff
 
-## Release outcome — FAIL (2026-08-28)
+## Release outcome — repaired and deployed (2026-08-28)
 
-Candidate `4f09b7d898d8bc4654c3182658190d9706f5060d` at <https://paid-before-ship-gate.sociobot.in> is **not approved for release**.
+The independent QA failure recorded in `verification-2.md` is repaired and deployed at <https://paid-before-ship-gate.sociobot.in>. The final repair commit is `95442bd` (`fix: cover every mobile touch target`), following `678a771` (`fix: close backup and mobile QA blockers`) and `efbe26e` (`test: respect CSP in text resize coverage`). All three commits are pushed to `origin/main`.
 
-The deployed JS and CSS are byte-for-byte identical to this candidate. Local and live automated suites pass, all 11 declared claim commands pass after `npm ci`, checkout works, rate limiting works, and the core order-to-pack-list workflow succeeds. Independent boundary testing nevertheless found a High release blocker: a backup with arrays but an invalid order currency is persisted before validation, then `/board` becomes completely blank on reload with an uncaught `Invalid currency code` error. The prior workspace has already been overwritten.
+Azure Static Web Apps deployment `e0b65be8-ddeb-4a9a-9bde-7e4843646c4f` uploaded the production `dist/` directory to `nice-forest-0b387ed10.7.azurestaticapps.net`; the custom domain returned HTTPS 200 immediately after deployment.
 
-Additional release findings:
+## Verifier findings closed
 
-- mobile touch targets below the required 44 px minimum, including Reset demo (36 px), Start for real (20 px), and Record override (40 px);
-- `/demo` grows from 390 to 430 px and clips `On hold 2` at 200% text size;
-- `$39 one-time`/refund claims are absent from `.factory/claims.json`, and the `local-only` claim test does not exercise CSV or payment imports.
+1. **Malformed backups cannot overwrite a workspace.** `src/backup.ts` validates and normalizes every stored/imported field before any IndexedDB write: required top-level lists, orders, rules, history, optional payment keys, finite non-negative money, three-letter currency, booleans, non-empty strings, override shape, and duplicate identifiers/numbers. A rejected import retains the in-memory and persisted workspace. A corrupt legacy record now opens a recoverable empty board with an import/add-record next step instead of crashing the renderer. The browser regression imports the verifier's `NOT-A-CURRENCY` fixture, proves the prior record survives a reload, injects a legacy corrupt record, and proves the board stays usable with no page error.
+2. **Mobile controls meet the 44 px minimum.** The wordmark, demo banner controls, override action, footer/legal links, skip link, and update action all have explicit 44 px targets. The 390 px regression measures each affected control, including the previously failing Reset demo, Start for real, Record override, footer links, and wordmark.
+3. **The demo reflows at 200% text size.** Narrow-screen filters now stack as full-width controls instead of horizontally scrolling. The browser regression sets 200% root text, asserts every filter remains visible inside a 390 px viewport, and asserts no document overflow.
+4. **Claims are complete and exercised.** `local-only` now imports both an order CSV and a payment CSV while monitoring every request for same-origin-only traffic. New `purchase-terms` coverage proves the visible $39 one-time copy, live catalog price, and Dodo checkout redirect. New `license-inactivity` coverage uses a recorded inactive Sociobot response and proves paid encryption locks. Terms now make the testable behavior explicit: inactive licenses lock paid features.
+5. **Installed clients update.** The PWA cache and manifest revision moved from `pbsg-v2`/`v=2` to `pbsg-v3`/`v=3`, so the repaired shell replaces the prior worker cache.
 
-Full commands, evidence, SHA-256 deployment identity, Lighthouse results, request/header checks, screenshots, rate-limit threshold, and remediation are in [verification-2.md](verification-2.md). Evidence files are under `.factory/verification-artifacts/`.
+## Verification evidence
 
-## Verification summary
+Clean local install and build:
 
-- `npm ci`: PASS (108 packages, 0 vulnerabilities)
-- all 11 exact claim commands: PASS after install
-- `npm test`: PASS (16/16)
-- `npm run typecheck`: PASS
-- `npm run lint`: PASS
-- `npm run build`: PASS
-- `npm run test:live`: PASS
-- full Playwright suite against production: PASS (16/16)
-- axe serious/critical on five live routes: 0
-- valid mobile Lighthouse: 96 performance, 100 accessibility, 100 best practices, 100 SEO
-- billing verification rate limit: first 429 on request 31, `Retry-After: 4`
-- PWA real-data offline reload: PASS; active cache `pbsg-v2`
-- malformed backup persistence/reload: **FAIL, release-blocking**
-- 44 px touch targets: **FAIL**
-- 200% text reflow on `/demo`: **FAIL**
+- `npm ci`: 108 packages installed; 0 vulnerabilities.
+- `npm run lint`: pass.
+- `npm run typecheck`: pass.
+- `npm test`: pass, 21/21 Playwright tests.
+- `npm run build`: pass; `dist/index.html` is at the required root.
+- Final production assets: JavaScript 32.75 KB raw / 11.04 KB gzip; CSS 18.02 KB raw / 4.69 KB gzip.
+- Every exact command in `.factory/claims.json` ran individually after the clean install: all 13 claim IDs passed.
 
-No product source was changed during verification.
+Browser, accessibility, privacy, and PWA:
+
+- `PLAYWRIGHT_BASE_URL=https://paid-before-ship-gate.sociobot.in npx playwright test`: pass, 21/21 against production.
+- Axe serious/critical scans pass on `/`, `/demo`, `/board`, `/privacy`, and `/terms`.
+- The 390 × 844 keyboard regression verifies the skip link and Enter path. The dedicated mobile regression verifies 44 × 44 targets and 200% text reflow without horizontal overflow.
+- The privacy claim imports both sample order and payment CSV data and observes no off-origin request.
+- The offline claim waits for the worker, reloads, sets the browser offline, and reloads the demo successfully. Production serves `const VERSION = 'pbsg-v3';`.
+- `/opt/fleet/lib/verify-url.sh` against production: HTTP 200, 893 ms load, no console/page errors, `lang=en`, one `h1`, one `main`, no missing image alt text, and no unlabeled buttons.
+
+Production identity and response policy:
+
+- `npm run test:live`: pass for live title, checkout/catalog identity, known routes, real 404, and cache policies.
+- Known routes `/`, `/demo`, `/board`, `/privacy`, and `/terms` return 200; `/definitely-not-a-route` returns 404.
+- Final live JS SHA-256 `e57966fe345931361d69ee25dd82868e4e9688de09d80c500a0ad99454485aca` equals `dist`; final CSS SHA-256 `4c15b8c4ed3afa8328f596fe4b75328f1225cd25522c61e5e82b716a991abc35` equals `dist`.
+- Live headers include the self-restricted CSP, `X-Content-Type-Options: nosniff`, strict-origin referrer policy, restrictive permissions policy, HSTS, immutable hashed-asset caching, and `no-cache, no-store, must-revalidate` for `/sw.js`.
+- Billing verification response policy was exercised with an invalid token: the first 429 occurred on request 31 with `Retry-After: 3`.
+
+Performance:
+
+- Final mobile Lighthouse: Performance 98, Accessibility 100, Best Practices 100, SEO 100; LCP 1.5 s, CLS 0.009, TBT 160 ms.
+
+## Run and verify
+
+```sh
+npm ci
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm run test:live
+PLAYWRIGHT_BASE_URL=https://paid-before-ship-gate.sociobot.in npx playwright test
+```
+
+## Product boundaries
+
+- Payment CSV evidence is supplied by the seller; the app does not contact banks or confirm settlement.
+- Payment matching remains within an order currency; currency conversion is out of scope.
+- Browser storage can be cleared; JSON backup/import is the recovery path.
+- A lost vault passphrase cannot be recovered.
+
+There are no known release-blocking gaps.
 
 ## Reproduce the blocker
 
