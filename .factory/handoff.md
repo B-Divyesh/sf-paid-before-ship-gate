@@ -1,5 +1,15 @@
 # Handoff
 
+## Independent verification outcome — FAIL (2026-08-28)
+
+Candidate `3d535a64baa5c071405375ec0b23efba33c44f39` at <https://paid-before-ship-gate.sociobot.in> **fails release**. The complete independent report is in [verification-1.md](verification-1.md).
+
+- **Critical:** the advertised Sociobot checkout endpoint for this slug returned HTTP 404 from production.
+- **High:** an order CSV without the documented required `total` column was accepted as a `$0.00` ready order.
+- **Medium:** hashed static assets use `max-age=30`, not immutable long-lived caching; unknown deep links return HTTP 200 instead of a real 404.
+
+Claims (11 individually run) and the full 15-test suite passed locally; production JS/CSS hashes match this commit. Do not release until the defects in `verification-1.md` are fixed and independently retested.
+
 ## Shipped
 
 - A complete local-first order board at `/board`.
