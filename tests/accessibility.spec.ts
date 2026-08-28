@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { readFile } from 'node:fs/promises';
 
-for (const route of ['/', '/demo', '/privacy', '/terms']) {
+for (const route of ['/', '/demo', '/board', '/privacy', '/terms']) {
   test(`has no serious accessibility issues on ${route}`, async ({ page }) => {
     const errors: string[] = [];
     page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
@@ -28,6 +28,32 @@ test('supports a 390px mobile viewport and keyboard path', async ({ page }) => {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
+test('keeps mobile touch targets usable and reflows filters at 200% text', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/demo');
+  for (const locator of [
+    page.getByRole('link', { name: 'Paid Before Ship Gate home' }),
+    page.getByRole('button', { name: 'Reset demo' }),
+    page.getByRole('link', { name: 'Start for real' }),
+    page.locator('[data-order-id="sample-2"]').getByRole('button', { name: 'Record override' }),
+    page.locator('footer').getByRole('link', { name: 'Privacy' }),
+    page.locator('footer').getByRole('link', { name: 'Terms' })
+  ]) {
+    const box = await locator.boundingBox();
+    expect(box, 'interactive control should have a box').not.toBeNull();
+    expect(box!.width).toBeGreaterThanOrEqual(44);
+    expect(box!.height).toBeGreaterThanOrEqual(44);
+  }
+  await page.addStyleTag({ content: ':root { font-size: 200% !important; }' });
+  await expect(page.getByRole('button', { name: /On hold 2/ })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  for (const button of await page.locator('.filter-bar button').all()) {
+    const box = await button.boundingBox();
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(390);
+  }
+});
+
 test('configures known SPA routes, real 404 responses, and safe cache policies', async () => {
   const config = JSON.parse(await readFile('dist/staticwebapp.config.json', 'utf8')) as {
     navigationFallback?: unknown;
@@ -50,7 +76,7 @@ test('configures known SPA routes, real 404 responses, and safe cache policies',
   }));
 
   const worker = await readFile('dist/sw.js', 'utf8');
-  expect(worker).toContain("const VERSION = 'pbsg-v2'");
+  expect(worker).toContain("const VERSION = 'pbsg-v3'");
   expect(worker).toContain('self.skipWaiting()');
   expect(worker).toContain('self.clients.claim()');
 });

@@ -1,6 +1,7 @@
 import '@fontsource/atkinson-hyperlegible/400.css';
 import '@fontsource/atkinson-hyperlegible/700.css';
 import './styles.css';
+import { validateBackup } from './backup';
 import { importOrders, importPayments, isReady, packListCsv } from './csv';
 import { captureLicense, hasPaidAccess, saveLicense, verifyLicense } from './license';
 import { sampleData } from './sample';
@@ -14,6 +15,7 @@ let filter: Filter = 'all';
 let demo = false;
 let paid = false;
 let locked = false;
+let recoveryMessage = '';
 
 function currentPath(): string { return location.pathname.replace(/\/+$/, '') || '/'; }
 
@@ -46,6 +48,10 @@ function render(focusHeading = false): void {
   else if (path === '/privacy') root.innerHTML = legalPage('privacy');
   else if (path === '/terms') root.innerHTML = legalPage('terms');
   else root.innerHTML = notFound();
+  if (recoveryMessage) {
+    notice(recoveryMessage, true);
+    recoveryMessage = '';
+  }
   if (focusHeading) requestAnimationFrame(() => root.querySelector<HTMLElement>('h1')?.focus());
 }
 
@@ -63,7 +69,14 @@ async function navigate(path: string): Promise<void> {
 
 async function loadRealData(): Promise<void> {
   try { data = await loadData(); locked = false; }
-  catch (error) { if ((error as Error).message === 'VAULT_LOCKED') locked = true; else throw error; }
+  catch (error) {
+    if ((error as Error).message === 'VAULT_LOCKED') locked = true;
+    else if ((error as Error).message === 'WORKSPACE_CORRUPT') {
+      data = { orders: [], rules: [], history: [] };
+      locked = false;
+      recoveryMessage = 'The saved workspace could not be opened. It was left untouched. Import a valid backup or add records to replace it.';
+    } else throw error;
+  }
 }
 
 function notice(message: string, error = false): void {
@@ -85,9 +98,9 @@ async function readFile(input: HTMLInputElement, kind: 'orders' | 'payments' | '
     if (kind === 'orders') { const result = importOrders(text, data); data = result.data; await persist(); render(); notice(`${result.count} ${result.count === 1 ? 'order' : 'orders'} imported.`); }
     else if (kind === 'payments') { const result = importPayments(text, data); data = result.data; await persist(); render(); notice(`${result.count} ${result.count === 1 ? 'payment' : 'payments'} matched. Check the ready list.`); }
     else {
-      const parsed = JSON.parse(text) as AppData;
-      if (!Array.isArray(parsed.orders) || !Array.isArray(parsed.rules)) throw new Error('This backup does not contain an order workspace. Choose a backup exported by this app.');
-      data = parsed; await persist(); render(); notice(`${data.orders.length} orders restored from backup.`);
+      const restored = validateBackup(JSON.parse(text));
+      if (!demo) await saveData(restored);
+      data = restored; render(); notice(`${data.orders.length} orders restored from backup.`);
     }
   } catch (error) { notice((error as Error).message, true); }
   input.value = '';

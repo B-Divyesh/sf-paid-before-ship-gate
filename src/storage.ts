@@ -1,3 +1,4 @@
+import { validateBackup } from './backup';
 import type { AppData } from './types';
 
 const DB_NAME = 'paid-before-ship-gate';
@@ -31,7 +32,10 @@ export async function loadData(): Promise<AppData> {
     request.onsuccess = () => {
       const value = request.result as AppData | EncryptedRecord | undefined;
       if (value && 'encrypted' in value) reject(new Error('VAULT_LOCKED'));
-      else resolve(value ?? structuredClone(EMPTY));
+      else {
+        try { resolve(value ? validateBackup(value) : structuredClone(EMPTY)); }
+        catch { reject(new Error('WORKSPACE_CORRUPT')); }
+      }
     };
     request.onerror = () => reject(request.error);
   });
@@ -70,7 +74,7 @@ export async function unlockVault(password: string): Promise<AppData> {
     const key = await deriveKey(password, salt);
     const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: base64ToBytes(stored.iv) }, key, base64ToBytes(stored.data));
     activeKey = key; activeSalt = salt;
-    return JSON.parse(new TextDecoder().decode(decrypted)) as AppData;
+    return validateBackup(JSON.parse(new TextDecoder().decode(decrypted)));
   } catch {
     throw new Error('That passphrase did not open this vault. Check it and try again.');
   }
