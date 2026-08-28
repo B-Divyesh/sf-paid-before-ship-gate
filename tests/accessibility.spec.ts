@@ -44,6 +44,15 @@ test('keeps mobile touch targets usable and reflows filters at 200% text', async
     expect(box!.width).toBeGreaterThanOrEqual(44);
     expect(box!.height).toBeGreaterThanOrEqual(44);
   }
+  await page.getByRole('link', { name: 'Skip to content' }).focus();
+  const skipBox = await page.getByRole('link', { name: 'Skip to content' }).boundingBox();
+  expect(skipBox!.width).toBeGreaterThanOrEqual(44);
+  expect(skipBox!.height).toBeGreaterThanOrEqual(44);
+  await page.goto('/');
+  const termsBox = await page.locator('.legal-note').getByRole('link', { name: 'terms' }).boundingBox();
+  expect(termsBox!.width).toBeGreaterThanOrEqual(44);
+  expect(termsBox!.height).toBeGreaterThanOrEqual(44);
+  await page.goto('/demo');
   await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
   await expect(page.getByRole('button', { name: /On hold 2/ })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
