@@ -1,43 +1,59 @@
-# Review 3 handoff — FAIL
+# Polish round 3 handoff — complete
 
-**Reviewed commit:** `79198aac6af0ee44131ef13da9eda9b8a22006ac`
+Paid Before Ship Gate is deployed at <https://paid-before-ship-gate.sociobot.in>. The one-click isolated sample workspace is <https://paid-before-ship-gate.sociobot.in/?demo=1>.
 
-**Live:** <https://paid-before-ship-gate.sociobot.in>
+## What changed
 
-**Review:** `.factory/review-3.md`
+- Made re-imports safe: omitted optional fields are preserved, recorded payments block currency changes, and material changes require confirmation.
+- Validated common payment-status columns and rejected pending, failed, refunded, and reversed rows.
+- Made payment references idempotent even when a later export changes note columns.
+- Stored license tokens only after successful verification; added retention disclosure, recheck, and removal controls.
+- Removed unproved merchant/support and passphrase-recovery claims; aligned terms and privacy copy with tested behavior.
+- Rewrote the first screen, workflow heading, metadata, README, catalog sentence, and static 404 footer in plain language.
+- Added route metadata/focus tests plus claim coverage for re-import safety, payment status, license storage, installability, and art provenance.
+- Preserved the tactile dispatch-desk risograph identity and the static offline PWA deployment class.
 
-## Completed
-
-- Re-ran the cold first-read review at 390 × 844 and 1440 × 900.
-- Audited every landing-page and README copy unit with word counts.
-- Exercised the one-click demo, reset, real-data isolation, request boundary, and offline reload.
-- Ran all 24 declared claim commands independently from a no-local clean clone.
-- Rechecked every finding from reviews 1 and 2 against the live site and current code.
-- Re-ran local and live browser suites, lint, typecheck, build, route metadata, 404, link crawl, keyboard, touch, zoom, and accessibility checks.
-
-## Result
-
-FAIL. Four blocking findings remain:
-
-- F-1-1: a previously paid USD balance clears the same order after a GBP re-import.
-- F-3-1: a minimal re-import without the optional hold column silently removes an existing payment hold.
-- F-1-12: merchant-of-record and support-responsibility copy remains broader than the registered and tested paid claim.
-- F-3-2: a payment row explicitly marked `failed` is counted and clears a held order.
-
-Three major and three minor findings are also recorded in the review. No product code was changed.
+Every finding from `.factory/review-1.md`, `.factory/review-2.md`, and `.factory/review-3.md` is mapped in `.factory/polish-3.md`.
 
 ## Verification
 
-- Clean clone `/tmp/pbsg-review3-oC7MuB`: 24/24 exact claim commands passed.
-- `npm test`: PASS, 34/34.
-- `npm run lint`: PASS.
-- `npm run typecheck`: PASS.
-- `npm run build`: PASS; `dist/` produced.
-- Live Playwright suite: PASS, 34/34.
-- `npm run test:live`: PASS.
-- Factory URL verifier: PASS, 676 ms, zero product-route console errors.
-- Playwright-Axe: zero serious/critical violations on every app route. Standalone Axe CLI could not pair its bundled ChromeDriver 152 with the worker’s preinstalled Chromium 145.
+- Clean clone: `/tmp/pbsg-polish3-final-wGnbFy`; `npm ci`; every exact command in `.factory/claims.json` passed independently, 29/29.
+- Local aggregate: `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build` passed. Playwright: 41/41.
+- Browser coverage: one-click demo, real-data isolation, reset, import/re-import, payment status, exports, backup round trip, encryption, license lifecycle, routing, history focus, keyboard, 390 px layout, 200% text, privacy request capture, and offline reload.
+- Accessibility: Playwright-Axe found zero serious or critical violations on `/`, `/demo`, `/board`, `/privacy`, and `/terms`.
+- Build output: `dist/index.html`; JS 41.77 KB raw / 13.33 KB gzip; CSS 19.54 KB raw / 4.99 KB gzip.
+- Lighthouse mobile: performance 99, accessibility 100, best practices 100, SEO 100; LCP 1.8 s, CLS 0.001, TBT 10 ms.
+- Deployment: Azure Static Web Apps production deployment `561d4986-9b12-410d-a46d-6821f3a5632b`, from application commit `5d0557d`.
+- Live aggregate: `PLAYWRIGHT_BASE_URL=https://paid-before-ship-gate.sociobot.in npx playwright test` passed 41/41.
+- Live contract: `npm run test:live` passed, including catalog price, checkout redirect, deep links, 404, service worker, and cache policy.
+- Factory URL check: HTTP 200, 864 ms, zero console errors, correct title and language, one `h1`, one `main`, all images with alt text, and all buttons named.
+- Live unknown route: HTTP 404 with the shared header/footer, legal links, external-link label, complete metadata, and response-header CSP.
 
-## Next steps
+Evidence:
 
-Repair the blocking re-import invariants first and add regression cases to the existing claim tests. Then align the paid/legal claim registry, license-token privacy controls, and copy/404 findings before requesting another review.
+- `.factory/verification-artifacts/polish-3-lighthouse-mobile.json`
+- `.factory/verification-artifacts/polish-3-live-home-mobile.png`
+- `.factory/verification-artifacts/polish-3-live-demo-mobile.png`
+- `.factory/verification-artifacts/polish-3-live-demo-desktop.png`
+- `.factory/verification-artifacts/polish-3-live-url/verify.json`
+
+## Run and deploy
+
+```sh
+npm ci
+npm run lint
+npm run typecheck
+npm test
+npm run build
+npm run preview
+```
+
+Deploy `dist/` as a static site. The work order used:
+
+```sh
+/opt/fleet/lib/deploy-static.sh paid-before-ship-gate dist
+```
+
+## Known gaps and next steps
+
+No known product, review, accessibility, privacy, offline, routing, or deployment gaps remain in this work order. No follow-up is required before release.
