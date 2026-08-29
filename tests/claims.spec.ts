@@ -323,6 +323,7 @@ test('@claim:license-storage-control saves accepted tokens only and removes them
   expect(await page.evaluate(() => localStorage.getItem('sb_license:paid-before-ship-gate'))).toBeNull();
   await page.getByLabel('License token').fill('accepted-license');
   await page.getByRole('button', { name: 'Verify and save license' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   expect(await page.evaluate(() => localStorage.getItem('sb_license:paid-before-ship-gate'))).toBe('accepted-license');
   await page.getByRole('button', { name: 'Manage paid access' }).click();
   await page.getByRole('dialog').getByRole('button', { name: 'Remove saved license' }).click();

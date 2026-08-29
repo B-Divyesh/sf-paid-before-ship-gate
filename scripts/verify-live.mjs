@@ -10,7 +10,7 @@ async function response(path, options = {}) {
 const home = await response('/');
 assert.equal(home.status, 200, 'home must return HTTP 200');
 const html = await home.text();
-assert.match(html, /<title>Paid Before Ship Gate — stop unpaid orders<\/title>/);
+assert.match(html, /<title>Paid Before Ship Gate — check payment before packing<\/title>/);
 
 const scriptPath = html.match(/src="(\/assets\/index-[^"]+\.js)"/)?.[1];
 const stylePath = html.match(/href="(\/assets\/index-[^"]+\.css)"/)?.[1];
