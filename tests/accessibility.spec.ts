@@ -41,8 +41,39 @@ test('restores scroll position and moves focus to the route heading on browser B
 
 test('ships a complete shared 404 shell and metadata', async () => {
   const page404 = await readFile('dist/404.html', 'utf8');
-  for (const text of ['<header>', '<footer>', 'name="description"', 'rel="canonical"', 'property="og:title"', 'name="twitter:card"', 'apple-touch-icon', 'Skip to content', 'Privacy', 'Terms']) expect(page404).toContain(text);
+  for (const text of ['<header>', '<footer>', 'name="description"', 'rel="canonical"', 'property="og:title"', 'property="og:url"', 'name="twitter:card"', 'apple-touch-icon', 'Skip to content', 'Privacy', 'Terms', 'Built by Param Factory <span class="sr-only">(external)</span>']) expect(page404).toContain(text);
   expect(page404).toContain('<h1 tabindex="-1">Page not found</h1>');
+});
+
+test('sets route titles, descriptions, canonicals, legal links, and focus', async ({ page }) => {
+  const routes = [
+    ['/', 'Paid Before Ship Gate — check payment before packing', 'https://paid-before-ship-gate.sociobot.in/'],
+    ['/?demo=1', 'Demo — Paid Before Ship Gate', 'https://paid-before-ship-gate.sociobot.in/demo'],
+    ['/board', 'Order board — Paid Before Ship Gate', 'https://paid-before-ship-gate.sociobot.in/board'],
+    ['/privacy', 'Privacy — Paid Before Ship Gate', 'https://paid-before-ship-gate.sociobot.in/privacy'],
+    ['/terms', 'Terms — Paid Before Ship Gate', 'https://paid-before-ship-gate.sociobot.in/terms']
+  ] as const;
+  for (const [route, title, canonical] of routes) {
+    await page.goto(route);
+    await expect(page).toHaveTitle(title);
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /\S+/);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', canonical);
+    await expect(page.locator('meta[property="og:url"]')).toHaveAttribute('content', canonical);
+    await expect(page.locator('footer').getByRole('link', { name: 'Privacy' })).toHaveAttribute('href', '/privacy');
+    await expect(page.locator('footer').getByRole('link', { name: 'Terms' })).toHaveAttribute('href', '/terms');
+  }
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Privacy' }).first().click();
+  await expect(page.getByRole('heading', { name: 'Your records stay under your control' })).toBeFocused();
+});
+
+test('moves focus into dialogs and returns it to the trigger', async ({ page }) => {
+  await page.goto('/');
+  const trigger = page.getByRole('button', { name: 'Restore paid access' });
+  await trigger.click();
+  await expect(page.getByLabel('License token')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(trigger).toBeFocused();
 });
 
 test('keeps mobile touch targets usable and reflows filters at 200% text', async ({ page }) => {
@@ -102,7 +133,7 @@ test('configures known SPA routes, real 404 responses, and safe cache policies',
   }));
 
   const worker = await readFile('dist/sw.js', 'utf8');
-  expect(worker).toContain("const VERSION = 'pbsg-v4'");
+  expect(worker).toContain("const VERSION = 'pbsg-v5'");
   expect(worker).toContain('self.skipWaiting()');
   expect(worker).toContain('self.clients.claim()');
 });

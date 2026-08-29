@@ -3,7 +3,7 @@ import '@fontsource/atkinson-hyperlegible/700.css';
 import './styles.css';
 import { validateBackup } from './backup';
 import { importOrders, importPayments, isReady, packListCsv } from './csv';
-import { captureLicense, hasPaidAccess, saveLicense, verifyLicense } from './license';
+import { captureLicense, hasPaidAccess, hasSavedLicense, removeLicense, verifyAndSaveLicense, verifyLicense } from './license';
 import { sampleData } from './sample';
 import { disableVault, enableVault, loadData, saveData, unlockVault, vaultIsOpen } from './storage';
 import type { AppData, Filter, Order } from './types';
@@ -21,7 +21,7 @@ function currentPath(): string { return location.pathname.replace(/\/+$/, '') ||
 function isDemoRoute(): boolean { return currentPath() === '/demo' || new URLSearchParams(location.search).get('demo') === '1'; }
 
 const titles: Record<string, string> = {
-  '/': 'Paid Before Ship Gate — stop unpaid orders',
+  '/': 'Paid Before Ship Gate — check payment before packing',
   '/demo': 'Demo — Paid Before Ship Gate',
   '/board': 'Order board — Paid Before Ship Gate',
   '/privacy': 'Privacy — Paid Before Ship Gate',
@@ -29,7 +29,7 @@ const titles: Record<string, string> = {
 };
 
 const descriptions: Record<string, string> = {
-  '/': 'Check payment before packing orders. Import CSV files, record approvals, and export a clear pack list.',
+  '/': 'Check payment before packing orders. Import spreadsheets, record approvals, and export a pack list.',
   '/demo': 'Try five sample orders in an isolated payment-checking workspace.',
   '/board': 'Import orders and payments, approve exceptions, and prepare a pack list.',
   '/privacy': 'Read how Paid Before Ship Gate keeps records and files in your browser.',
@@ -48,6 +48,7 @@ function setMetadata(path: string): void {
   for (const selector of ['meta[property="og:title"]', 'meta[name="twitter:title"]']) {
     document.querySelector<HTMLMetaElement>(selector)?.setAttribute('content', document.title);
   }
+  document.querySelector<HTMLMetaElement>('meta[property="og:url"]')?.setAttribute('content', `https://paid-before-ship-gate.sociobot.in${route}`);
 }
 
 async function persist(): Promise<void> {
@@ -60,7 +61,7 @@ function render(focusHeading = false): void {
   setMetadata(path);
   document.body.dataset.vaultOpen = String(vaultIsOpen());
   if (demo) root.innerHTML = board(data, true, filter, true);
-  else if (path === '/') root.innerHTML = home();
+  else if (path === '/') root.innerHTML = home(paid);
   else if (path === '/board') root.innerHTML = locked ? lockedPage() : board(data, false, filter, paid);
   else if (path === '/privacy') root.innerHTML = legalPage('privacy');
   else if (path === '/terms') root.innerHTML = legalPage('terms');
@@ -83,7 +84,11 @@ async function navigate(path: string): Promise<void> {
   history.pushState({ scrollX: 0, scrollY: 0 }, '', path);
   filter = 'all';
   if (path === '/demo' || new URL(path, location.origin).searchParams.get('demo') === '1') data = sampleData();
-  if (path === '/board' && demo) await loadRealData();
+  if (path === '/board' && demo) {
+    await loadRealData();
+    paid = hasPaidAccess();
+    void verifyLicense().then((valid) => { if (valid !== paid) { paid = valid; render(); } });
+  }
   render(true); window.scrollTo(0, 0);
 }
 
@@ -115,7 +120,11 @@ async function readFile(input: HTMLInputElement, kind: 'orders' | 'payments' | '
   const file = input.files?.[0]; if (!file) return;
   try {
     const text = await file.text();
-    if (kind === 'orders') { const result = importOrders(text, data); data = result.data; await persist(); render(); notice(`${result.count} ${result.count === 1 ? 'order' : 'orders'} imported.`); }
+    if (kind === 'orders') {
+      const result = importOrders(text, data);
+      if (result.changes.length) orderImportReviewDialog(result);
+      else { data = result.data; await persist(); render(); notice(`${result.count} ${result.count === 1 ? 'order' : 'orders'} imported.`); }
+    }
     else if (kind === 'payments') { const result = importPayments(text, data); data = result.data; await persist(); render(); notice(`${result.count} ${result.count === 1 ? 'payment' : 'payments'} matched. Check the ready list.`); }
     else {
       const restored = validateBackup(JSON.parse(text));
@@ -124,6 +133,20 @@ async function readFile(input: HTMLInputElement, kind: 'orders' | 'payments' | '
     }
   } catch (error) { notice((error as Error).message, true); }
   input.value = '';
+}
+
+function orderImportReviewDialog(result: ReturnType<typeof importOrders>): void {
+  const rows = result.changes.map((change) => `<li><strong>${escapeHtml(change.orderNumber)}</strong><span>${change.details.map(escapeHtml).join(' · ')}</span></li>`).join('');
+  const dialog = dialogShell(`<form method="dialog" class="dialog-form"><div class="dialog-head"><h2>Review changes to existing orders</h2><button class="icon-button" type="button" data-close aria-label="Close dialog">×</button></div><p>Nothing changes until you confirm. Payment holds, packed status, and approvals are shown here when affected.</p><ul class="change-review">${rows}</ul><div class="button-row"><button class="button primary" value="default">Apply reviewed changes</button><button class="button secondary" type="button" data-close>Cancel import</button></div></form>`);
+  dialog.querySelector<HTMLButtonElement>('.button.primary')?.focus();
+  dialog.querySelector('form')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    data = result.data;
+    await persist();
+    dialog.close(); dialog.remove(); render();
+    notice(`${result.count} ${result.count === 1 ? 'order' : 'orders'} imported after review.`);
+  });
+  dialog.addEventListener('close', () => dialog.remove());
 }
 
 function orderDialog(): void {
@@ -147,9 +170,28 @@ function approvalDialog(order: Order): void {
 }
 
 function licenseDialog(): void {
-  const dialog = dialogShell(`<form method="dialog" class="dialog-form"><div class="dialog-head"><h2>Restore paid access</h2><button class="icon-button" type="button" data-close aria-label="Close dialog">×</button></div><label>License token<input name="license" required autocomplete="off"></label><button class="button primary" value="default">Verify license</button><p class="field-error" aria-live="polite">Verification needs an internet connection.</p></form>`);
+  const saved = hasSavedLicense();
+  const savedControls = saved ? `<section class="license-saved" aria-labelledby="saved-license-title"><h3 id="saved-license-title">Saved license</h3><p>A license token is stored in this browser.</p><div class="button-row"><button class="button secondary" type="button" data-check-license>Check saved license</button><button class="button danger" type="button" data-remove-license>Remove saved license</button></div></section>` : '';
+  const dialog = dialogShell(`<form method="dialog" class="dialog-form"><div class="dialog-head"><h2>${saved ? 'Manage paid access' : 'Restore paid access'}</h2><button class="icon-button" type="button" data-close aria-label="Close dialog">×</button></div>${savedControls}<p>A valid token is saved in this browser until you remove it. Rejected tokens are not saved.</p><label>${saved ? 'Use a different license token' : 'License token'}<input name="license" required autocomplete="off"></label><button class="button primary" value="default">Verify and save license</button><p class="field-error" aria-live="polite">Verification needs an internet connection.</p></form>`);
   dialog.querySelector<HTMLInputElement>('input')?.focus();
-  dialog.querySelector('form')?.addEventListener('submit', async (event) => { event.preventDefault(); const token = String(new FormData(event.currentTarget as HTMLFormElement).get('license') ?? ''); saveLicense(token); paid = await verifyLicense(true); if (paid) { dialog.close(); dialog.remove(); render(); } else dialog.querySelector('.field-error')!.textContent = 'The license was not accepted. Check the token and try again.'; });
+  const message = dialog.querySelector<HTMLElement>('.field-error')!;
+  dialog.querySelector('[data-check-license]')?.addEventListener('click', async () => {
+    message.textContent = 'Checking the saved license…';
+    paid = await verifyLicense(true);
+    render();
+    message.textContent = paid ? 'The saved license is active.' : 'Sociobot reports this license inactive. Paid features are now locked.';
+  });
+  dialog.querySelector('[data-remove-license]')?.addEventListener('click', () => {
+    removeLicense(); paid = false; dialog.close(); dialog.remove(); render(); notice('The saved license was removed from this browser.');
+  });
+  dialog.querySelector('form')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const token = String(new FormData(event.currentTarget as HTMLFormElement).get('license') ?? '');
+    message.textContent = 'Checking this license…';
+    const accepted = await verifyAndSaveLicense(token);
+    if (accepted) { paid = true; dialog.close(); dialog.remove(); render(); notice('Paid access is active on this browser.'); }
+    else message.textContent = 'The license was not accepted. It was not saved. Check the token and try again.';
+  });
   dialog.addEventListener('close', () => dialog.remove());
 }
 
@@ -159,7 +201,7 @@ function vaultDialog(): void {
     dialog.querySelector('form')?.addEventListener('submit', async (event) => { event.preventDefault(); await disableVault(data); dialog.close(); dialog.remove(); document.body.dataset.vaultOpen = 'false'; render(); notice('Device encryption is off.'); });
     return;
   }
-  const dialog = dialogShell(`<form method="dialog" class="dialog-form"><div class="dialog-head"><h2>Encrypt this workspace</h2><button class="icon-button" type="button" data-close aria-label="Close dialog">×</button></div><p>The passphrase cannot be recovered. Export a backup first.</p><label>New passphrase<input name="password" type="password" minlength="10" required autocomplete="new-password"></label><label>Repeat passphrase<input name="confirm" type="password" minlength="10" required autocomplete="new-password"></label><button class="button primary" value="default">Encrypt this device</button><p class="field-error" aria-live="assertive"></p></form>`);
+  const dialog = dialogShell(`<form method="dialog" class="dialog-form"><div class="dialog-head"><h2>Encrypt this workspace</h2><button class="icon-button" type="button" data-close aria-label="Close dialog">×</button></div><p>The passphrase is not stored. You must enter it again after reloading. Export a backup first.</p><label>New passphrase<input name="password" type="password" minlength="10" required autocomplete="new-password"></label><label>Repeat passphrase<input name="confirm" type="password" minlength="10" required autocomplete="new-password"></label><button class="button primary" value="default">Encrypt this device</button><p class="field-error" aria-live="assertive"></p></form>`);
   dialog.querySelector('form')?.addEventListener('submit', async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget as HTMLFormElement); const password = String(form.get('password')); if (password !== String(form.get('confirm'))) { dialog.querySelector('.field-error')!.textContent = 'The passphrases do not match. Enter them again.'; return; } try { await enableVault(password, data); dialog.close(); dialog.remove(); document.body.dataset.vaultOpen = 'true'; render(); notice('This workspace is encrypted on this device.'); } catch (error) { dialog.querySelector('.field-error')!.textContent = (error as Error).message; } });
 }
 
@@ -219,11 +261,17 @@ function networkNotice(): void {
 window.addEventListener('online', networkNotice); window.addEventListener('offline', networkNotice);
 
 async function start(): Promise<void> {
-  captureLicense(); paid = hasPaidAccess(); void verifyLicense().then((valid) => { if (valid !== paid) { paid = valid; render(); } });
+  const returnedLicense = captureLicense();
   history.replaceState({ ...(history.state ?? {}), scrollX: window.scrollX, scrollY: window.scrollY }, '', location.href);
   demo = isDemoRoute(); data = demo ? sampleData() : { orders: [], rules: [], history: [] };
+  paid = demo ? false : hasPaidAccess();
   if (currentPath() === '/board') await loadRealData();
   render(); networkNotice();
+  if (returnedLicense && !demo) {
+    void verifyAndSaveLicense(returnedLicense).then((valid) => { if (valid !== paid) { paid = valid; render(); notice(valid ? 'Paid access is active on this browser.' : 'The returned license was not accepted or saved.'); } });
+  } else if (!demo) {
+    void verifyLicense().then((valid) => { if (valid !== paid) { paid = valid; render(); } });
+  }
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').then((registration) => {
     registration.addEventListener('updatefound', () => { const worker = registration.installing; worker?.addEventListener('statechange', () => { if (worker.state === 'installed' && navigator.serviceWorker.controller) { const toast = document.createElement('div'); toast.className = 'update-toast'; toast.innerHTML = '<span>An app update is ready.</span><button>Use update</button>'; toast.querySelector('button')?.addEventListener('click', () => location.reload()); document.body.append(toast); } }); });
   }).catch(() => undefined);

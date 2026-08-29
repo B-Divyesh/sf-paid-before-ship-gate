@@ -1,1 +1,1 @@
-Stop unpaid orders before packing with a payment checkpoint that stays in your browser.
+Check payments before packing, hold unpaid orders, and export only ready orders.
