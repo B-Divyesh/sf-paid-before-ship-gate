@@ -1,4 +1,33 @@
-# Polish round 3 handoff — complete
+# Review round 4 handoff — complete
+
+This reviewer-only round made no product-code changes. It wrote
+`.factory/review-4.md`, performed the required cold live review, fresh-clone
+claim verification, history audit, link/route/metadata checks, and committed
+the review documentation.
+
+## Review result
+
+`PASS`: no blocking or minor findings. The one-click demo, data isolation,
+claims registry, route skeleton, copy, accessibility checks, and distinct visual
+identity were verified on the live site and against the current source.
+
+## How verified
+
+- Fresh clone: `npm ci`, followed by every exact command declared in
+  `.factory/claims.json` (29/29 passed).
+- Live: `npm run test:live` passed; direct crawl confirmed 200 for all public
+  routes and 404 for an unknown route.
+- Fresh Chromium contexts at 390 × 844 and 1440 × 900 confirmed the first
+  screen, demo, request log, metadata, and no console errors.
+
+## Known gaps / next steps
+
+No review gaps were found. Keep the existing regression coverage when changing
+payment matching, demo storage isolation, legal wording, or routing.
+
+---
+
+# Prior polish round 3 handoff — complete
 
 Paid Before Ship Gate is deployed at <https://paid-before-ship-gate.sociobot.in>. The one-click isolated sample workspace is <https://paid-before-ship-gate.sociobot.in/?demo=1>.
 
