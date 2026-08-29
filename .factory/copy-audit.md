@@ -1,6 +1,6 @@
 # Landing-page copy audit
 
-Audited 28 August 2026. Word counts treat numbers and contractions as one word. No sentence exceeds 22 words. No banned marketing word appears.
+Audited 29 August 2026. Word counts treat numbers and contractions as one word. No sentence exceeds 22 words. No banned marketing word appears.
 
 | Copy | Words | Flag |
 |---|---:|---|
@@ -14,21 +14,21 @@ Audited 28 August 2026. Word counts treat numbers and contractions as one word. 
 | $39 once for encryption and customer hold rules | 8 | — |
 | See which orders are ready to pack | 7 | — |
 | See each order’s total, payments, and hold status on one board. | 11 | — |
+| How it works | 3 | — |
 | Turn order exports into a pack list | 8 | — |
-| Use an order number, total, and optional customer or payment hold columns. | 12 | — |
+| Import order spreadsheets (CSV) | 4 | — |
 | Import amounts and currencies. | 4 | — |
-| Fully paid orders become ready. | 5 | — |
 | Only paid or manually approved orders are exported. | 8 | — |
+| Payment exceptions and limits | 4 | — |
 | You approve every payment exception | 5 | — |
-| This tool does not score customers, collect debts, reserve stock, contact anyone, process payments, or print shipping labels. | 17 | — |
-| Imports may omit names, references, and dates. | 7 | — |
-| Only order numbers and amounts are required. | 7 | — |
+| This tool does not score customers, collect debts, reserve stock, contact anyone, process payments, or print shipping labels. | 18 | — |
+| Paid features | 2 | — |
 | Encrypt records and save customer hold rules | 7 | — |
-| The free board includes imports, payment checks, approvals, backups, and pack lists. | 12 | — |
-| Pay once to add an encrypted vault and customer hold rules. | 11 | — |
-| Restore desk kit | 3 | — |
-| Sociobot provides checkout. | 3 | — |
-| Dodo processes payment and handles the receipt. | 7 | — |
+| Pay once to add encrypted local storage and customer hold rules. | 11 | — |
+| Buy encryption and hold rules | 5 | — |
+| Restore paid access | 3 | — |
+| Checkout opens a Dodo-hosted payment page. | 6 | — |
+| Dodo is the merchant of record and handles returns under its Buyer Terms. | 14 | — |
 
 ## First-screen read-aloud check
 
@@ -46,5 +46,5 @@ The job, audience, and first action fit in one breath.
 | dispatch export | pack list |
 | manual exception | approval |
 | reusable customer setting | customer hold rule |
-| encrypted browser store | vault |
-| paid add-on | desk kit |
+| encrypted browser store | encrypted local storage |
+| paid add-on | paid features |

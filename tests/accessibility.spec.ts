@@ -24,7 +24,7 @@ test('supports a 390px mobile viewport and keyboard path', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
   await page.getByRole('link', { name: 'Try it with sample data' }).focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByText('SO-1049')).toBeVisible();
+  await expect(page.locator('.demo-first-look article').nth(1)).toContainText('SO-1049');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
@@ -42,7 +42,7 @@ test('restores scroll position and moves focus to the route heading on browser B
 test('ships a complete shared 404 shell and metadata', async () => {
   const page404 = await readFile('dist/404.html', 'utf8');
   for (const text of ['<header>', '<footer>', 'name="description"', 'rel="canonical"', 'property="og:title"', 'name="twitter:card"', 'apple-touch-icon', 'Skip to content', 'Privacy', 'Terms']) expect(page404).toContain(text);
-  expect(page404).toContain('<h1 tabindex="-1">This page missed the pack list</h1>');
+  expect(page404).toContain('<h1 tabindex="-1">Page not found</h1>');
 });
 
 test('keeps mobile touch targets usable and reflows filters at 200% text', async ({ page }) => {

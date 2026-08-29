@@ -76,7 +76,7 @@ export async function unlockVault(password: string): Promise<AppData> {
     activeKey = key; activeSalt = salt;
     return validateBackup(JSON.parse(new TextDecoder().decode(decrypted)));
   } catch {
-    throw new Error('That passphrase did not open this vault. Check it and try again.');
+    throw new Error('That passphrase did not open this workspace. Check it and try again.');
   }
 }
 

@@ -29,10 +29,16 @@ test('@claim:demo-sandbox keeps an existing real record isolated from sample cha
 });
 
 test('@claim:demo-entry opens five sample orders with a persistent resettable banner', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await page.getByRole('link', { name: 'Try it with sample data' }).click();
   await expect(page).toHaveURL(/\?demo=1$/);
   await expect(page.getByText('Demo — sample data, nothing is saved')).toBeVisible();
+  const sampleOrders = page.locator('.demo-first-look article');
+  await expect(sampleOrders.nth(0)).toBeInViewport();
+  await expect(sampleOrders.nth(0)).toContainText(/Moss & Thread.*\$186\.00.*Ready · paid/);
+  await expect(sampleOrders.nth(1)).toBeInViewport();
+  await expect(sampleOrders.nth(1)).toContainText(/Brighton Pantry.*\$94\.50.*Hold · \$94\.50 due/);
   await expect(page.locator('[data-order-id]')).toHaveCount(5);
   await expect(page.locator('.batch-count')).toContainText('3');
   await expect(page.getByRole('button', { name: /On hold 2/ })).toBeVisible();
@@ -55,6 +61,16 @@ test('@claim:payment-currency rejects a mismatched payment currency and accepts 
   await expect(page.locator('[data-order-id]').filter({ hasText: 'FX-1' })).toContainText('Hold · £100.00 due');
   await page.locator('#payments-file').setInputFiles(csv('gbp-payment.csv', 'order_number,amount,currency\nFX-1,100,GBP'));
   await expect(page.locator('[data-order-id]').filter({ hasText: 'FX-1' })).toContainText('Ready · paid');
+});
+
+test('@claim:payment-default-currency treats an omitted payment currency as USD only', async ({ page }) => {
+  await page.goto('/?demo=1');
+  await page.locator('#orders-file').setInputFiles(csv('orders.csv', 'order_number,total,currency,hold\nUSD-DEFAULT,10,USD,yes\nGBP-DEFAULT,10,GBP,yes'));
+  await page.locator('#payments-file').setInputFiles(csv('usd-default.csv', 'order_number,amount\nUSD-DEFAULT,10'));
+  await expect(page.locator('[data-order-id]').filter({ hasText: 'USD-DEFAULT' })).toContainText('Ready · paid');
+  await page.locator('#payments-file').setInputFiles(csv('gbp-default.csv', 'order_number,amount\nGBP-DEFAULT,10'));
+  await expect(page.locator('#notice')).toHaveText('Payment for GBP-DEFAULT is USD, but the order is GBP. It was not matched.');
+  await expect(page.locator('[data-order-id]').filter({ hasText: 'GBP-DEFAULT' })).toContainText('Hold · £10.00 due');
 });
 
 test('@claim:payment-aggregation adds unique partial payments before clearing an order', async ({ page }) => {
@@ -121,7 +137,7 @@ test('@claim:saved-customer-hold-rules apply a saved customer hold rule to later
 
 test('@claim:free-board keeps payment checks, approvals, backups, and pack lists available without a license', async ({ page }) => {
   await page.goto('/board');
-  for (const name of ['Import order CSV', 'Import payments', 'Add one order', 'Export backup', 'Import backup']) await expect(page.getByRole('button', { name }).first()).toBeVisible();
+  for (const name of ['Import order spreadsheet (CSV)', 'Import payment spreadsheet (CSV)', 'Add one order', 'Export backup', 'Import backup']) await expect(page.getByRole('button', { name }).first()).toBeVisible();
   await expect(page.getByRole('link', { name: /Get encryption and customer hold rules for \$39/ })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Encrypt this device' })).toHaveCount(0);
 });
@@ -186,7 +202,7 @@ test('@claim:passphrase-not-stored requires the passphrase again after reload', 
   await page.getByLabel('New passphrase').fill('dispatch-passphrase'); await page.getByLabel('Repeat passphrase').fill('dispatch-passphrase'); await page.getByRole('dialog').getByRole('button', { name: 'Encrypt this device' }).click();
   await expect(page.getByRole('button', { name: 'Turn off encryption' })).toBeVisible();
   expect(await page.evaluate(() => JSON.stringify(localStorage))).not.toContain('dispatch-passphrase');
-  await page.reload(); await expect(page.getByRole('heading', { name: 'Open the order vault' })).toBeVisible();
+  await page.reload(); await expect(page.getByRole('heading', { name: 'Open the encrypted workspace' })).toBeVisible();
 });
 
 test('@claim:offline-reload works offline after the first visit', async ({ page, context }) => {
@@ -195,16 +211,26 @@ test('@claim:offline-reload works offline after the first visit', async ({ page,
   await expect(page.getByText('Demo — sample data, nothing is saved')).toBeVisible();
 });
 
-test('@claim:purchase-terms shows the $39 one-time desk kit and checkout disclosure', async ({ page }) => {
-  await page.goto('/'); await expect(page.getByText('$39 once for encryption and customer hold rules')).toBeVisible();
-  await expect(page.getByText('Sociobot provides checkout. Dodo processes payment and handles the receipt.')).toBeVisible();
-  await expect(page.getByRole('link', { name: /Buy the desk kit/ })).toHaveAttribute('href', 'https://api.sociobot.in/api/v1/products/paid-before-ship-gate/checkout');
+test('@claim:purchase-terms verifies the public USD 39 catalog, hosted checkout, and Dodo Buyer Terms', async ({ page, request }) => {
+  await page.goto('/');
+  await expect(page.getByText('$39 once for encryption and customer hold rules')).toBeVisible();
+  await expect(page.getByText('Checkout opens a Dodo-hosted payment page.')).toBeVisible();
+  await expect(page.getByRole('link', { name: /Buy encryption and hold rules/ })).toHaveAttribute('href', 'https://api.sociobot.in/api/v1/products/paid-before-ship-gate/checkout');
+  await page.goto('/terms');
+  await expect(page.getByRole('link', { name: /Buyer Terms/ })).toHaveAttribute('href', 'https://dodopayments.com/buyer-terms');
+  const catalog = await request.get('https://api.sociobot.in/api/v1/products');
+  expect(catalog.ok()).toBe(true);
+  const body = await catalog.json() as { data: { slug: string; price_minor: number; currency: string }[] };
+  expect(body.data.find((product) => product.slug === 'paid-before-ship-gate')).toMatchObject({ price_minor: 3900, currency: 'USD' });
+  const checkout = await request.get('https://api.sociobot.in/api/v1/products/paid-before-ship-gate/checkout', { maxRedirects: 0 });
+  expect(checkout.status()).toBe(303);
+  expect(checkout.headers().location).toMatch(/^https:\/\/checkout\.dodopayments\.com\/session\//);
 });
 
 test('@claim:license-inactivity locks paid features when verification returns inactive', async ({ page }) => {
   await page.addInitScript(() => { localStorage.setItem('sb_license:paid-before-ship-gate', 'test-license'); localStorage.setItem('sb_license:paid-before-ship-gate:verdict', JSON.stringify({ valid: true, checkedAt: Date.now() })); });
   await page.route('https://api.sociobot.in/api/v1/products/paid-before-ship-gate/verify?license=test-license', (route) => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ valid: false }) }));
-  await page.goto('/'); await page.getByRole('button', { name: 'Restore desk kit' }).click(); await page.getByLabel('License token').fill('test-license'); await page.getByRole('dialog').getByRole('button', { name: 'Verify license' }).click();
+  await page.goto('/'); await page.getByRole('button', { name: 'Restore paid access' }).click(); await page.getByLabel('License token').fill('test-license'); await page.getByRole('dialog').getByRole('button', { name: 'Verify license' }).click();
   await expect(page.getByRole('dialog')).toContainText('The license was not accepted. Check the token and try again.');
 });
 

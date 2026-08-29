@@ -33,7 +33,7 @@ const descriptions: Record<string, string> = {
   '/demo': 'Try five sample orders in an isolated payment-checking workspace.',
   '/board': 'Import orders and payments, approve exceptions, and prepare a pack list.',
   '/privacy': 'Read how Paid Before Ship Gate keeps records and files in your browser.',
-  '/terms': 'Read the Paid Before Ship Gate terms and desk kit purchase details.'
+  '/terms': 'Read the Paid Before Ship Gate terms, paid-feature details, and refund information.'
 };
 
 function setMetadata(path: string): void {
@@ -75,7 +75,7 @@ function render(focusHeading = false): void {
 }
 
 function lockedPage(): string {
-  return `${header('board')}<main id="main" class="locked-page"><div class="lock-mark" aria-hidden="true">▰</div><p class="eyebrow">Encrypted on this device</p><h1 tabindex="-1">Open the order vault</h1><p>Enter the passphrase used when this workspace was encrypted.</p><form id="unlock-form" class="stack-form"><label for="unlock-password">Vault passphrase</label><input id="unlock-password" name="password" type="password" minlength="10" autocomplete="current-password" required><button class="button primary">Open the order vault</button><p id="unlock-error" class="field-error" aria-live="assertive"></p></form></main>${footer()}`;
+  return `${header('board')}<main id="main" class="locked-page"><div class="lock-mark" aria-hidden="true">▰</div><p class="eyebrow">Encrypted on this device</p><h1 tabindex="-1">Open the encrypted workspace</h1><p>Enter the passphrase used when this workspace was encrypted.</p><form id="unlock-form" class="stack-form"><label for="unlock-password">Workspace passphrase</label><input id="unlock-password" name="password" type="password" minlength="10" autocomplete="current-password" required><button class="button primary">Open the encrypted workspace</button><p id="unlock-error" class="field-error" aria-live="assertive"></p></form></main>${footer()}`;
 }
 
 async function navigate(path: string): Promise<void> {
@@ -147,7 +147,7 @@ function approvalDialog(order: Order): void {
 }
 
 function licenseDialog(): void {
-  const dialog = dialogShell(`<form method="dialog" class="dialog-form"><div class="dialog-head"><h2>Restore the desk kit</h2><button class="icon-button" type="button" data-close aria-label="Close dialog">×</button></div><label>License token<input name="license" required autocomplete="off"></label><button class="button primary" value="default">Verify license</button><p class="field-error" aria-live="polite">Verification needs an internet connection.</p></form>`);
+  const dialog = dialogShell(`<form method="dialog" class="dialog-form"><div class="dialog-head"><h2>Restore paid access</h2><button class="icon-button" type="button" data-close aria-label="Close dialog">×</button></div><label>License token<input name="license" required autocomplete="off"></label><button class="button primary" value="default">Verify license</button><p class="field-error" aria-live="polite">Verification needs an internet connection.</p></form>`);
   dialog.querySelector<HTMLInputElement>('input')?.focus();
   dialog.querySelector('form')?.addEventListener('submit', async (event) => { event.preventDefault(); const token = String(new FormData(event.currentTarget as HTMLFormElement).get('license') ?? ''); saveLicense(token); paid = await verifyLicense(true); if (paid) { dialog.close(); dialog.remove(); render(); } else dialog.querySelector('.field-error')!.textContent = 'The license was not accepted. Check the token and try again.'; });
   dialog.addEventListener('close', () => dialog.remove());

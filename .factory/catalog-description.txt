@@ -1,1 +1,1 @@
-Stop unpaid orders before packing with a local payment checkpoint.
+Stop unpaid orders before packing with a payment checkpoint that stays in your browser.

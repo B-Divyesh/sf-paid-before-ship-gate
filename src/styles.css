@@ -104,6 +104,12 @@ footer a { min-width: 44px; min-height: 44px; display: inline-flex; align-items:
 .demo-banner > span:last-child { display: flex; gap: 16px; align-items: center; }
 .demo-banner button { min-height: 44px; padding: 4px 10px; border: 2px solid var(--ink); background: var(--paper-light); font-weight: 700; cursor: pointer; }
 .demo-banner a { min-height: 44px; display: inline-flex; align-items: center; color: var(--ink); font-weight: 700; }
+.demo-first-look { max-width: 1180px; margin: 24px auto 0; padding: 0 clamp(16px, 5vw, 72px); }
+.demo-first-look > .eyebrow { margin-bottom: 8px; }
+.demo-first-look > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.demo-first-look article { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; align-items: center; padding: 12px 14px; border: var(--rule); background: var(--paper-light); box-shadow: 4px 4px 0 var(--ink); }
+.demo-first-look article > span:first-child { overflow-wrap: anywhere; }
+.demo-first-look .status { grid-column: 1 / -1; }
 .board-page { min-height: 70vh; padding: clamp(40px, 7vw, 88px) clamp(16px, 5vw, 72px) 96px; }
 .board-heading { display: flex; justify-content: space-between; gap: 32px; align-items: end; max-width: 1180px; margin: 0 auto 36px; }
 .board-heading h1 { max-width: 13ch; font-size: clamp(2.7rem, 6vw, 4.7rem); }
@@ -202,6 +208,11 @@ code { padding: 2px 5px; background: #e8dfca; }
   .preview-row { align-items: flex-start; flex-direction: column; gap: 8px; }
   .live-preview, .how, .boundaries, .price { padding-left: 18px; padding-right: 18px; }
   .demo-banner { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .demo-first-look { margin-top: 16px; }
+  .demo-first-look > div { grid-template-columns: 1fr; gap: 10px; }
+  .demo-first-look article { grid-template-columns: minmax(0, 1fr) auto; padding: 10px 12px; }
+  .demo-first-look .status { grid-column: auto; grid-row: 2; }
+  .board-page { padding-top: 32px; }
   .board-heading { align-items: flex-start; flex-direction: column; }
   .batch-count { min-width: 92px; padding: 10px 6px; }
   .batch-count span { font-size: 2.2rem; }

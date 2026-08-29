@@ -1,7 +1,7 @@
 # Demo sandbox
 
 - URL: `https://paid-before-ship-gate.sociobot.in/?demo=1` (the first-screen action); `/demo` is also supported.
-- Sample: five orders, three ready outcomes, two unpaid holds, one saved customer rule, and varied partial-payment states.
+- Sample: five orders, three ready outcomes, two unpaid holds, one saved customer rule, and varied partial-payment states. On a phone, one ready and one held sample order appear directly below the banner before the board controls.
 - Reset: choose **Reset demo** in the persistent yellow demo banner.
 - Exit: choose **Start for real**. Demo changes are discarded.
 - Storage namespace: in-memory `sampleData()` state. Demo mode never opens, reads, or writes the real `paid-before-ship-gate` IndexedDB database.
