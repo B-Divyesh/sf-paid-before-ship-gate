@@ -1,3 +1,45 @@
+# Review round 5 handoff — complete
+
+This independent reviewer-only round made no product-code changes. It added
+.factory/review-5.md and rechecked the deployed product at
+https://paid-before-ship-gate.sociobot.in.
+
+## Review result
+
+**PASS:** zero findings and zero untested public claims. The implementation
+reviewed was 5d0557d0cd42c355549b79b2d4c9d84b99a17ecd. The documentation
+revision is ad3c928e707fb7e9f4f20bb3fe0724166294b04d; changes after the
+implementation candidate are documentation only. Fresh-build JS and CSS
+matched the live hashed assets by SHA-256.
+
+## How verified
+
+- Clean checkout: npm ci, npm run lint, npm run typecheck, npm test (41/41),
+  and npm run build all passed.
+- Every one of the 29 exact claim commands in .factory/claims.json passed
+  independently. Registry tags were complete and one-to-one.
+- Live: npm run test:live passed. The 41-test Playwright suite also passed
+  against the live URL, including the matching Playwright–Axe scans on every
+  app route.
+- Fresh phone and desktop browsers confirmed the first-screen job, audience,
+  action, demo sample, reset, real-data isolation, keyboard/focus, route
+  titles, legal pages, links, privacy traffic, offline behavior, and designed
+  HTTP 404.
+- A direct invalid-backup recovery test rejected an invalid currency while
+  preserving the existing real record across reload. Live license verification
+  was rate-limited at request 31 with Retry-After: 4.
+- /opt/fleet/lib/verify-url.sh passed. The standalone Axe CLI could not launch
+  because its ChromeDriver targets Chrome 152 while the supplied Playwright
+  Chromium is 145; the pinned Playwright–Axe integration passed locally and
+  live instead.
+
+## Known gaps / next steps
+
+None. Preserve the claim coverage and local-first demo isolation when changing
+imports, payment matching, backups, service-worker behavior, or licensing.
+
+---
+
 # Review round 4 handoff — complete
 
 This reviewer-only round made no product-code changes. It wrote
